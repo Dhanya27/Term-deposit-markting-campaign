@@ -1,0 +1,1593 @@
+---
+title: "Prediction of Term deposit Subscription in Marketing Campaign by different models"
+author: "Dhanya G"
+date: "27/07/2021"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Introduction
+
+In banking system, when account holder deposits money, the bank can use that money to loan or lend to other clients or business organisations. To use these funds for lending, the bank will pay the investor in consideration of their services as interest on their account balance. Deposit accounts like this, the banker can withdraw their money at any time. This makes hard for banking organisations to know ahead of time how much they may loan to other customers at any given time. To control this situation, bank offers term deposit accounts. This account withholds funds for a fixed period of time in return for high interest rate.
+
+In term deposits, clients can deposit or invest but can’t withdraw money for certain period of time. This helps bank to loan money to other customers at any time without worrying about clients withdrawal of money at any period. Also, bank uses term deposits, thereby receiving higher interest rate from borrowers compared to what bank is paying as an interest for term deposit. Thus, it’s a win-win situation for banks.
+
+The interest gained on term deposit account is higher compared to standard deposit account or interest - bearing checking accounts. Increased rate is because access to the money is limited to the time period in term deposit account. It is also an extremely safe investment intriguing to conservative, low-risk investors. Though term deposit has more benefits compared to savings account, many people are not aware of this account and its features and how to approach this. So, this project focuses on targeting customers by analysing their characteristics ,thereby improving the strategies of marketing campaign. 
+
+This project is based on term deposits given by Portuguese banking institution. Portuguese bank uses phone calls as marketing campaign to reach out customers for creating term deposit accounts. Previous campaigns data and results are collected to provide insights for better upcoming campaign. The data is obtained from UCI Machine Learning Repository. To overcome the problem of which customer to call or not, one can look at dataset which contains attributes of customer information, client’s social and economic details and previous campaign details and whether client subscribed term deposit or not in that campaign?. By using this information, I built a model to predict whether client will subscribe term deposit or not by efficiently targeting intended customers. This is done by selecting which attributes contribute to clients term deposit subscription. The required attributes are found by predictive models to predict clients subscription. Various models with their accuracies are built in this project and the main goal is to find the best model with higher accuracy to predict term deposit subscription.
+
+# Executive Summary
+
+The objective of this project is to predict which features of customers should be targeted in the upcoming marketing campaign of a Portuguese bank. The marketing campaign is based on the phone calls. More than one contact to the same client is required, in order to access if the product(bank term deposit) would be (*‘yes’*) or not (*‘no’*) subscribed. We can draw insights from the data to improve the strategies for the upcoming marketing campaign by choosing attributes that contribute to term deposit subscription. The models built in this project are Logistic regression and 15 other classification models from rminer package. The aim is to choose the best model with highest accuracy to predict term deposit subscription to clients. 
+
+The initial phase of the project gives a picture about the dataset with its overview and the necessary techniques to be implemented for reorganising the data into a format that is ready to explore.
+
+# Dataset
+
+The data is related with direct marketing campaigns of a Portuguese banking institution. The dataset found here is sourced from *UCI Machine Learning Repository* collected between May 2008 to November 2010, very close to the data analysed in [1]. The UCI Machine Learning Repository is a collection of databases, domain theories, and data generators that are used by the machine learning community for the empirical analysis of machine learning algorithms. The archive was created as an ftp archive in 1987 by David Aha and fellow graduate students at UC Irvine. Since that time, it has been widely used by students, educators, and researchers all over the world as a primary source of machine learning data sets.
+
+The dataset can be found here:https://archive.ics.uci.edu/ml/machine-learning-databases/00222/. It consists of two zip files: *bank-additional.zip* and *bank.zip*. The *bank-additional.zip* file is used here because it contains additional information such as social and economic attributes of clients which is helpful in determining term deposit subscription compared to *bank.zip*. Downloaded from https://archive.ics.uci.edu/ml/machine-learning-databases/00222/bank-additional.zip.
+
+The *bank-additional-full.csv* csv file is unzipped from *bank-additional.zip* zip file. It consists of 41188 observations and *20 descriptive* and *1 target feature (yes/no)*. 
+
+## Output attribute
+
+The target attribute is *y*. It consists of two values, *yes* or *no*. I.e, Has the client subscribed term deposit or not?. Since *y* has two values, it is a binary classification problem.
+The classification goal is to predict if the client will subscribe (yes/no) a term deposit. 
+
+## Descriptive attributes
+
+### Bank Client Data
+
+1.  age - clients age (numeric)
+2.  job - type of job (categorical: 'admin.',' blue-collar', 'entrepreneur',' housemaid', 'management', 'retired', 'self-employed', 'services', 'student', 'technician',' unemployed',' unknown'))
+3. marital - marital status of client (categorical: 'divorced','married','single','unknown'; note: 'divorced' means divorced or widowed)
+4. education (categorical: 'basic.4y', 'basic.6y', 'basic.9y', 'high.school', 'illiterate', 'professional.course', 'university.degree', 'unknown')
+5. default - has credit in default - failure to repay debt (categorical: 'no', 'yes', 'unknown') 
+6. housing - has client took housing loan? (categorical: 'no', 'yes', 'unknown')
+7. loan - has personal loan? (categorical: 'no', 'yes', 'unknown')
+
+### Related with the last contact of the current campaign:
+
+8. contact - how did bank communicate? (categorical: 'cellular', 'telephone')
+9. month - last contact month of year (categorical: 'jan', 'feb', 'mar', ..., 'nov', 'dec')
+10. day_of_week: last contact day of the week (categorical: 'mon', 'tue', 'wed', 'thu', 'fri')
+11. duration: last contact duration, in seconds (numeric). Important note: this attribute highly affects the output target (e.g., if duration=0 then y='no'). Yet, the duration is not known before a call is performed. Also, after the end of the call y is obviously known. Thus, this input should only be included for benchmark purposes and should be discarded if the intention is to have a realistic predictive model. 
+
+### Campaign Attributes
+
+12. campaign: number of contacts performed during this campaign and for this client (numeric, includes last contact)
+13. pdays: number of days that passed by after the client was last contacted from a previous campaign (numeric; 999 means client was not previously contacted)
+14. previous: number of contacts performed before this campaign and for this client (numeric)
+15. poutcome: outcome of the previous marketing campaign (categorical: 'failure','nonexistent','success')
+
+### Social and Economic context Attributes
+
+16. emp.var.rate: employment variation rate - quarterly indicator (numeric)
+17. cons.price.idx: consumer price index - average change in prices over time that consumers pay for a basket of goods and services - monthly indicator (numeric) 
+18. cons.conf.idx: consumer confidence index - degree of optimism consumers are expressing through their activities of savings and spending - monthly indicator (numeric) 
+19. euribor3m: euribor 3 month rate - daily indicator (numeric)
+20. nr.employed: number of employees - quarterly indicator (numeric)
+
+Each row represents characteristic of a single customer. The class *unknown* denotes no known information about that customer attributes.
+
+# Overview
+
+For this project, I built predictive model using Regression model ( Logistic Regression model ) and 14 other classification models such as Conditional Inference tree(ctree) model, Decision tree model(rpart), Generalized Linear Model(cv.glmnet), k-nearest neighbour model(knn), Support Vector Machine model(SVM), Least Squares Support Vector Machine model(lssvm), MultiLayer Perceptron with one hidden layer(mlp), Random Forest algorithm(randomForest), eXtreme Gradient Boosting (Tree) (xgboost), Bagging model, Adaboost model(boosting), Linear Discriminant Analysis model(LDA), Logistic regression model (multinom) and Naive Bayes Model(naiveBayes). These models predict whether client subscribe term deposit or not. All the models will be evaluated and the model with highest accuracy is chosen as a best model in predicting term deposit subscription.
+
+
+# Data Exploration and Visualization
+
+## Data Preprocessing
+
+In this project, I use Bank Telemarketing dataset from UCI Machine Learning Repository. The dataset is divided into two parts namely, *bank_data* (90%) which is used for training the model and *validation* (10%) for predicting and testing the model. The *validation* set (final hold-out test set) should only be used at the end of the project to test the final algorithm which outputs maximum accuracy. Because of that, *bank_data* dataset should be further split into two parts, *bank_train_data* set  for training and *bank_validation data* for testing the model until required accuracy is reached. Finally, for the final model with maximimum accuracy, we train the entire *bank_data* set with the *validation* set to predict term deposit subscription with highest accuracy value. For rminer classification models, *bank_train_data* data is split into training and test sets by *holdout()* function. The model with highest accuracy is chosen as the best model in predicting clients term deposit subscription.
+
+### 1.Installing and loading packages
+
+Installing required packages for the project
+```{r install-package, results='hide', message=FALSE, warning=FALSE}
+if(!require(dplyr)) install.packages("dplyr")
+if(!require(tidyverse)) install.packages("tidyverse")
+if(!require(caret)) install.packages("caret")
+if(!require(data.table)) install.packages("data.table")
+if(!require(rminer)) install.packages("rminer")
+```
+
+Loading required libraries and data
+```{r load-package,results='hide', message=FALSE, warning=FALSE}
+library(dplyr)
+library(tidyverse)
+library(caret)
+library(data.table)
+library(rminer)
+```
+
+### 2.Data Extraction
+
+The required Bank Marketing dataset can be extracted from UCI Machine Learning Repository (https://archive.ics.uci.edu/ml/machine-learning-databases/00222/). Data can be downloaded from:“https://archive.ics.uci.edu/ml/machine-learning-databases/00222/bank-additional.zip”. Unzip *bank-additional-full.csv* from *bank-additional* zip file which consists of full observations compared to others. The csv file is imported in R using base R function read,csv() and copied into object *data*
+
+```{r data-extract,results='hide',message=FALSE,warning=FALSE}
+dl <- tempfile()
+download.file("https://archive.ics.uci.edu/ml/machine-learning-databases/00222/bank-additional.zip",dl)
+data <- read.csv2(unzip(dl,"bank-additional/bank-additional-full.csv"),header = TRUE,
+                       stringsAsFactors = TRUE)
+```
+
+### 3.Exploring the dataset
+
+Bank Marketing dataset consists of 41188 rows and 21 columns. Each row represents characteristic about individual customer. Each column represents features needed to analyse customer behavior. It is represented as a tidy format below:
+```{r data-explore}
+# Number of observations in the dataset.
+dim(data)
+# There are 41188 rows and 21 columns in the dataset.
+
+# Overview of the dataset with initial 6 rows
+head(data)
+
+# Structure of the dataset
+str(data)
+
+# Summary of the dataset
+summary(data)
+```
+It consists of 21 features namely, age, job, marital, education, default, housing, loan, contact, month, day_of_week, duration, campaign, pdays, previous, poutcome, emp.var.rate, cons.price.idx, cons.conf.idx, euribor3m, nr.employed and y(output variable). It is made of 20 descriptive attributes(client and campaign information) and 1 target attribute(y)
+Output variable y has two values yes or no, which denotes whether client has subscribed term deposit or not?
+
+### 4. Data Cleaning - Scanning for NAs
+
+The *data* dataset is scanned for missing values using is.na() function. Because, NAs can disrupt the model later while predicting the term deposit subsription.
+```{r scan-na}
+colSums(is.na(data))
+```
+It is proven that all attributes in the dataset doesn't have NA values. So, there is no problem in future to transform NAs into mean or median of the attribute to get a real predictive model.
+
+### 5. Splitting the data
+
+Bank Marketing Dataset is split into two parts namely, *bank_data* and *validation* sets. The *validation* set will be 10% of bank marketing data.
+
+```{r data-split,results='hide',message=FALSE,warning=FALSE}
+set.seed(1, sample.kind="Rounding")
+# Splitting the dataset into training and testing sets
+test_index <- createDataPartition(y = data$y, times = 1, p = 0.1, list = FALSE)
+bank_data <- data[-test_index,]
+bank_temp <- data[test_index,]
+# Make sure euribor3m in validation set are also in bank_data set
+validation <- bank_temp %>%
+  semi_join(bank_data, by = "euribor3m")
+# Bring back removed rows from validation to bank_data set 
+removed <- anti_join(bank_temp, validation)
+bank_data <- rbind(bank_data, removed)
+rm(dl, test_index, bank_temp, removed) #Clear out unwanted files
+# Validation set should only be used at the end of the final model.
+```
+
+##  Data Exploration and Visualization
+
+General overview of the dataset:
+
+```{r bank-overview}
+# Number of observations(rows and columns) in the dataset
+dim(bank_data)
+dim(validation)
+
+# Glimpse of the dataset
+glimpse(bank_data)
+```
+There are 37071 rows and 21 columns in the training dataset. We have factor and integer as classes for data. Final holdout set *validation* consists of 4117 observations(about 10% of training set). The *validation* set (final hold-out test set) should only be used at the end of the project to test the final model.
+
+## Has the client subscribed a deposit?
+
+The main goal is to predict *y* (term deposit subscription). Lets look at that:
+```{r target-explore}
+unique(bank_data$y)
+table(bank_data$y)
+```
+The variable *y* has two levels of factor values - *yes* or *no*. 
+*yes* - client subscribed term deposit
+*no* - client does not subscribe term deposit
+Table lists how many clients subscribed(yes) term deposit or not(no). Lets look at the distribution of y:
+
+```{r y-dist,echo=FALSE}
+term_y <- bank_data %>%
+  group_by(y) %>% summarize(count = n()) %>% arrange(desc(count))
+term_y
+term_y %>% 
+  ggplot(aes(x = y, y = count)) + 
+  geom_bar(stat="identity") +
+  ggtitle("Distribution of term deposit subscription")
+```
+
+This shows clients who does not subscribe term deposit are higher in count due to its large proportion of number in the dataset compared to clients who subscribed term deposit in this campaign.
+
+## Distribution of Clients Age
+
+Number of unique age of clients in training dataset are:
+```{r age}
+length(unique(bank_data$age))
+min(bank_data$age)
+max(bank_data$age)
+table(bank_data$age)
+```
+ 
+This shows that in the marketing campaign, minimum age person who have been contacted are 17 whereas maximum age of the person is 98. There are 78 different ages of person who are client to banks. The table shows how many times the same type of age person has been contacted during the campaign
+
+Does age play a role in predicting output variable, y? Lets look about that
+```{r age-count,echo=FALSE,warning=FALSE,results='hide',message=FALSE}
+bank_data %>% group_by(age) %>% summarize(count = n()) %>% arrange(desc(count))
+```
+
+Lets separate clients subscription yes and no against age in a histogram to clearly understand the marketing campaign:
+
+```{r age-facet-hist, echo=FALSE,message=FALSE,warning=FALSE}
+ggplot(bank_data, aes(age, fill =y)) + geom_histogram(aes(y=..count..)) +
+  facet_grid(~y) +
+  ggtitle("Histogram of the Clients Age Subscription")
+```
+
+Histogram Plot shows clients around the age group 30 to 40 are higher in number. This implies banking systems choose more people around 30 to 40 for marketing campaigns compared to others for coercing clients for term deposit subscription. And one can see decrease in number after age 60 drastically. This means clients age>60 does not subscribe term deposit much in number.
+
+The age group between 30 to 40 subscribe term deposit(yes) more, although all age group people subscribes in a less manner. Surprisingly, the same age group(30 - 40) also have higher count in who did not subscribe term deposit(no) too. This leads to the fact that this is the most sought after group due to its highest proportion in total.
+
+##  What are the different type of jobs of client?
+Number of distinct jobs of clients in training dataset are:
+
+```{r job}
+n_distinct(bank_data$job)
+table(bank_data$job)
+```
+
+There are 12 different types of job for client in the marketing campaign. Table lists what are the different types of job as well as how many clients are in the same job type in the campaign. 
+
+### Distribution of Job types Of Clients
+Does job of a client plays a role in predicting output variable, y? Lets look about that
+```{r job-count,echo=FALSE,message=FALSE,results='hide',warning=FALSE}
+jobs <- bank_data %>% select(job,y) %>% 
+  group_by(job,y) %>%
+  summarize(count = n()) %>% arrange(desc(count))
+jobs
+```
+
+```{r job-plot,echo=FALSE}
+jobs %>%
+  ggplot(aes(x = reorder(job,count), y = count, fill = y)) +
+  geom_bar(stat="identity", position ="dodge") +
+  xlab("job") +
+  theme(axis.text.x=element_text(angle=45,hjust=1)) +
+  ggtitle("Distribution of Client's job types")
+```
+
+From the plot, it is clear unknown and student are lower in number compared to others. People with admin. job who does not subscribe are larger in number (8153) in the dataset. This implies admin.job people are more active in deposit subscription in both "yes"(1221) and "no"(8153). People in admin subscribes term deposit more followed by technician(660) and blue-collar(565). This is due to higher proportion in total of admin jobs in the dataset.
+
+To confirm if job attribute contributes to term deposit subscription, lets run chi-squared test and see,
+```{r job-chi,echo=FALSE}
+c_job <- table(bank_data$job,bank_data$y)
+chisq_job <- chisq.test(c_job)
+chisq_job
+```
+Since p-value is less than 0.05, it is clear that age is an important factor in predicting term deposit subscription. Because, p-value < 0.05 denotes that results are considered statistically significant. i.e, attribute job is significant(dependent) to attribute y(term deposit subscription). So, job feature contributes to deposit subscription and thus job feature should be included in predicting the model.
+
+## What are the distinct marital status of client?
+Number of different jobs of clients in training dataset are:
+
+```{r marital}
+n_distinct(bank_data$marital)
+table(bank_data$marital)
+```
+
+There are 4 categories in the marital status of client. They are married, single, divorced and unknown.Table shows how many number of clients belong to the same marital category in the campaign. There are 72 unknown entries of clients for marital status in the marketing campaign. The value *unknown* refers that there is no information about the marital details for that client.
+
+## Distribution of Marital Status of clients
+Does marital status of a client plays a role in predicting output variable, y? Lets look about that,
+
+```{r mar-count,echo=FALSE,message=FALSE,results='hide',warning=FALSE}
+mar <- bank_data %>%
+  select(marital,y) %>% 
+  group_by(marital,y) %>%
+  summarize(count = n()) %>%
+  arrange(desc(count))
+mar  
+```
+
+```{r mar-plot,echo=FALSE}
+mar %>% ggplot(aes(reorder(marital,count),count)) +
+  geom_bar(aes(fill = y),stat = "identity") + 
+  xlab("Marital status") +
+  ggtitle("Barplot of Marital status of clients")
+```
+
+Married people avails the highest number of term deposits followed by single people. Plot shows Married people who does not subscribe term deposits are also higher in number(20157) followed by single people(y = "no") of 8922 respectively. This result is also due to higher proportion of people in that category. *Unknown* clients who subscribe term deposit are lower in number(12) followed by unknown clients who does not subscribe(y = "no").
+
+To check if marital attribute contributes to term deposit subscription, lets run chi-squared test and see,
+```{r mar-chi,echo=FALSE}
+c_mar <- table(bank_data$marital,bank_data$y)
+chisq_mar <- chisq.test(c_mar)
+chisq_mar
+```
+
+It is clear, p-value < 0.05 implies that attribute marital is statistically significant(dependent) to attribute y(term deposit subscription) which means that marital details of client is an important feature in term deposit subscription.
+
+## Basic Educational details of client:
+Number of different education details of clients in trainng set are:
+
+```{r edu}
+n_distinct(bank_data$education)
+table(bank_data$education)
+```
+
+There are 8 categories of Education status in the dataset namely, basic.4y, high.school, basic.6y, basic.9y, professional.course, unknown, university.degree and illiterate. The table lists number of clients who are in the same education category of the campaign. There are 1541 unknown information of client education details in the dataset.
+
+## Distribution of Education details of clients
+Does education status of a client plays a role in predicting output variable, y? Lets look about that,
+
+```{r edu-count,echo=FALSE,message=FALSE,results='hide',warning=FALSE}
+edu <- bank_data %>%
+  select(education,y) %>%
+  group_by(education,y) %>%
+  summarize(count = n()) %>%
+  arrange(desc(count))
+edu
+```
+
+```{r edu-plot,echo=FALSE}
+edu %>%
+  ggplot(aes(x = reorder(education,count), y = count, fill = y)) +
+  geom_bar(stat="identity", position ="dodge") +
+  xlab("Education") +
+  theme(axis.text.x=element_text(angle=45,hjust=1)) +
+  ggtitle("Distribution of Education of the client")
+```
+
+University degree clients subscribe term deposit higher (1510) than others(High school-936 and Professional course - 535). Plot shows Clients who have University Degree who does not subscribe are also higher in number because of the large proportion of university entries in the dataset. Illiterate people have lower term deposit subscription compared to others.
+
+To check if education of the client relates to term deposit subscription, run chi-squared test,
+```{r edu-chi, echo=FALSE}
+c_edu <- table(bank_data$education,bank_data$y)
+chisq_edu <- chisq.test(c_edu,simulate.p.value = TRUE)
+chisq_edu 
+```
+
+One can see p-value is less than 0.05 above for education chi-squared test with y. It is clear that education feature plays a role in subscribing term deposit subscription because education feature is dependent to deposit subscription in the marketing campaign.
+
+## Does client have a credit default? 
+Number of unique credit default status of client are:
+
+```{r default}
+table(bank_data$default)
+```
+
+It have three default status as yes,no and unknown. *yes* is for client who has credit default, *no* is for clients who does not have credit default and *unknown* for no information about default status for that client. Table shows how many clients are in the same category of default status in the marketing campaign. Credit default is the term used when clients fail to repay loan or debt. We don't know credit default status for 7757 clients in the campaign.
+
+## How does credit default affects deposit subscription?
+Does credit default status of a client plays a role in predicting output variable, y? Lets look about that,
+```{r def-count,echo=FALSE,message=FALSE,results='hide',warning=FALSE}
+def <- bank_data %>%
+  group_by(default,y) %>%
+  summarize(count = n()) %>%
+  arrange(desc(count))
+def
+```
+
+```{r def-plot,echo=FALSE}
+def %>%
+  ggplot(aes(x = reorder(default,count), y = count, fill = y)) +
+  geom_bar(stat="identity", position ="dodge") +
+  xlab("Credit Default Status") +
+  facet_grid(~y) +
+  ggtitle("Barplot of distribution of Credit Default of clients towards subscription")
+```
+
+From the plot, it is clear, client with credit default does not subscribe term deposit much. They are lesser (3) in count compared to others. This may be due to the fact, that they already have debt to pay. So, they can't make fixed term investment throughout the term correctly with some exceptions. Clients who does not have credit default avails term deposit higher compared to others. This may be because they don't have debt to repay. So, they can make fixed term investment following throughout the period. 
+
+Chi-squared test is run below to check whether default is an important variable in deciding term deposit subscription.
+```{r def-chi,echo=FALSE}
+c_def <- table(bank_data$default,bank_data$y)
+chisq_def <- chisq.test(c_def,simulate.p.value = TRUE)
+chisq_def
+```
+
+Chi-squared test's statistical significant result shows default is an important feature in deciding term deposit subscription(y) preference. Because p-value is 0.0004998 which is less than 0.05. So, default status of client is dependent to output variable,y.
+
+## Does client take any housing loans in this or any banks?
+Different types of housing loan status of the client are:
+```{r house}
+unique(bank_data$housing)
+```
+It have 3 status of housing loans in the dataset- *"yes"* for taking house loan, *"no"* for no house loan and *"unknown"* for no known information about housing loan for that client. There are 909 unknown entries for housing loan details in this campaign.
+
+## How does housing loan affects term deposit subscription?
+Does housing loan status of a client plays a role in predicting output variable, y? Lets look about that,
+```{r house-count,echo=FALSE,message=FALSE, results='hide',warning=FALSE}
+house <- bank_data %>%
+  group_by(housing,y) %>%
+  summarize(count = n()) %>%
+  arrange(desc(count))
+house
+```
+
+```{r house-plot,echo=FALSE}
+house %>% 
+  ggplot(aes(x = reorder(housing,count), y = count, fill = y)) +
+  geom_bar(stat="identity", position ="dodge") +
+  xlab("Housing Loan Status") +
+  facet_grid(~y) +
+  ggtitle("Barplot of distribution of Housing loan status of clients")
+```
+
+It appears people who take housing loans subscribes term deposit more compared to others followed by people who don't take hosing loans. Plot shows clients with housing loans who does not subscribe term deposits are also higher in number. Clients with unknown information of housing loans are the least in number(809 for y="no" and 100 for y="yes") in the bank marketing dataset.
+
+Chi-squared test is run below to check whether housing loan is an important variable in deciding term deposit subscription.
+```{r house-chi,echo=FALSE}
+c_house <- table(bank_data$housing,bank_data$y)
+chisq_house <- chisq.test(c_house)
+chisq_house
+```
+Chi-squared test's statistical result shows housing loan feature is not significant to y variable. That is, housing loan status is not an important variable in deciding term deposit subscription preference because p-value is greater than 0.05. Here p-value is 0.05763. Lets analyze this feature in the model results and check whether chi-squared test result is true. 
+
+## Does client take any personal loans?
+What are the different status of personal loan for client?
+```{r loan}
+table(bank_data$loan)
+```
+It shows three status as yes, no and unknown for personal loan status for the client.
+*"yes"* for taking personal loan, *"no"* for no personal loan and *"unknown"* for no known information about personal loan for that client. Table lists how many clients belongs to the same criteria of personal loan details in the marketing campaign.
+
+## Distribution of personal loan details of the client
+Does personal loan status of a client plays a role in predicting output variable, y? Lets look about that,
+```{r loan-count,echo=FALSE,message=FALSE,warning=FALSE,results='hide'}
+per_loan <- bank_data %>%
+  group_by(loan,y) %>%
+  summarize(count = n()) %>%
+  arrange(desc(count))
+per_loan
+```
+
+```{r loan-plot,echo=FALSE}
+per_loan %>% 
+  ggplot(aes(x = reorder(loan,count), y = count, fill = y)) +
+  geom_bar(stat="identity", position ="dodge") +
+  xlab("Personal Loan Status") +
+  facet_grid(~y) +
+  ggtitle("Barplot of distribution of Personal loan status of clients")
+```
+
+From the plot, it appears that person who does not take personal loans avails term deposit in large number followed by clients who take personal loans. This is because, people who take personal loan have enough money to pay the loan. So, they can't make fixed term investment in others. Clients with unknown details about personal loan are the ones who subscribe term deposit in low number in the campaign.
+
+Chi-squared test is run below:
+```{r loan-chi,echo=FALSE}
+c_loan <- table(bank_data$loan,bank_data$y)
+chisq_loan <- chisq.test(c_loan)
+chisq_loan
+```
+
+Since p-value is 0.6555(greater than 0.05), personal loan feature does not decide subscription preference of clients. Lets analyze this in our model results section. From the above exploration of two chi-squared test results above, it is clear people who take loans(housing loan or personal loan), does not contribute to term deposit subscription as both p-value is greater than 0.05. 
+
+## Contact details of client 
+What are the different ways bankers make contact with client for the campaign?
+
+```{r contact}
+table(bank_data$contact)
+```
+
+By two ways - telephone and cellular. Table shows number of clients who have been contacted by cellular and telephone
+
+## Distribution of contact status with client
+Does contact status of a client plays a role in predicting output variable, y? Lets look about that,
+```{r contact-count,echo=FALSE,message=FALSE,results='hide',warning=FALSE}
+con <- bank_data %>%
+  select(contact,y) %>%
+  group_by(contact,y) %>%
+  summarize(count = n()) %>%
+  arrange(desc(count))
+con
+```
+
+```{r contact-plot,echo=FALSE}
+con %>% 
+  ggplot(aes(x = reorder(contact,count), y = count, fill = y)) +
+  geom_bar(stat="identity", position ="dodge") +
+  xlab("Contact with clients") +
+  facet_grid(~y) +
+  ggtitle("Barplot of distribution of Contact details with clients for campaign")
+```
+
+Clients who have been contacted by cellular way subscribes term deposit higher in number. This is same with cellular contact who does not subscribe term deposit due to its large proportion of number. Clients contacted by telephone and subscribes term deposit are the least in the marketing campaign.
+
+To check if contact attribute contributes to term deposit subscription, lets run chi-squared test and see,
+```{r contact-chi,echo=FALSE}
+c_contact <- table(bank_data$contact,bank_data$y)
+chisq_contact <- chisq.test(c_contact)
+chisq_contact 
+```
+
+From the chi-squared test with Yates' continuity correction, it is clear that contact variable is an important factor in deciding term deposit subscription as p-value < 0.05. i.e, Contact attribute is statistically significant to term deposit subscription.So,we should consider this feature while predicting the model.
+
+## Exploration of attribute month
+What are the different month bankers make contact with client for the campaign?
+
+```{r month}
+table(bank_data$month)
+```
+ Table shows how many clients has been contacted under same month in the campaign.
+
+## Which month client subscribes term deposit much?
+Does attribute month is an important factor to be considered while predicting term deposit subscription? Lets see about that.
+
+```{r month-count,echo=FALSE,message=FALSE,results='hide',warning=FALSE}
+mon <- bank_data %>%
+  group_by(month,y) %>%
+  summarize(count = n()) %>%
+  arrange(desc(count))
+mon
+```
+
+```{r month-plot,echo=FALSE}
+mon %>%
+  ggplot(aes(x = reorder(month,count), y = count, fill = y)) +
+  geom_bar(stat="identity", position ="dodge") +
+  xlab("Month") +
+  theme(axis.text.x=element_text(angle=45,hjust=1)) +
+  ggtitle("Barplot of distribution of month in the campaign")
+```
+
+Plot shows in month may, clients subscribe term deposit more compared to other months in the campaign followed by august and july month. From this plot, we get to know which month client is subscribing more and which month not. This helps us to target customers during the marketing campaign. We can increase the number of calls and clients in month may and august and we can make sure there are enough opening accounts for term deposit subscription. December month is the one client subscribes term deposit in low number in the campaign.
+
+Chi-squared test is run below,
+```{r month-chi,echo=FALSE}
+c_mon <- table(bank_data$month,bank_data$y)
+chisq_mon <- chisq.test(c_mon)
+chisq_mon
+```
+From the chi-squared test, it is clear that month variable is an important factor in deciding term deposit subscription as p-value < 0.05. Month attribute is statistically significant (dependent) to term deposit subscription. So, we can consider month attribute while predicting the model.
+
+## Exploration of attribute week
+What are the days bankers make contact with client for the campaign?
+
+```{r week}
+table(bank_data$day_of_week)
+```
+Table shows how many clients have been contacted in the same day in the campaign.
+
+# Which day of week client subscribes term deposit much?
+Does attribute day_of_week is an important factor to be considered while predicting term deposit subscription? Lets see about that.
+```{r day-count,echo=FALSE,message=FALSE,results='hide',warning=FALSE}
+day <- bank_data %>%
+  group_by(day_of_week,y) %>%
+  summarize(count = n()) %>%
+  arrange(desc(count))
+day
+```
+
+```{r day-plot,echo=FALSE}
+day %>% ggplot(aes(reorder(day_of_week,count),count)) +
+  geom_bar(aes(fill = y),stat = "identity") + 
+  xlab("Day of week") +
+  ggtitle("Barplot of distribution of Day of week in the campaign")
+```
+
+Plot shows Thursday is the day of week clients subscribe term deposit more compared to other days followed by Monday and Wednesday. There is not much difference in the days where client subscribes term deposit. The total numbers for day of week are closer to each other. Friday is the day client subscribes term deposit in lesser number in the campaign.
+
+Chi-squared test is run below to check whether day of week is an important variable in deciding term deposit subscription.
+```{r}
+c_day <- table(bank_data$day_of_week,bank_data$y)
+chisq_day <- chisq.test(c_day)
+chisq_day
+```
+
+Chi-squared test tells p-value as 0.000288 which is less than 0.05. So, day of week variable affects term deposit subscription preference in the campaign.
+
+# Exploration of duration of last contact
+How many different duration of time last contact is made for clients in the campaign?
+```{r duration}
+length(unique(bank_data$duration))
+min(bank_data$duration)
+max(bank_data$duration)
+```
+There are 1513 unique duration of phone calls during the campaign. Minimum duration of phone call is 0 whereas maximum duration of contact is 4918. If duration is 0, then there is no term deposit subscription as clients does not attend the call. 
+
+## Distribution of duration of last contact
+Does attribute duration is an important factor to be considered while predicting term deposit subscription? Lets see about that.
+
+```{r duration-count,echo=FALSE,message=FALSE,results='hide',warning=FALSE}
+dur <- bank_data %>%
+  group_by(duration,y) %>%
+  summarize(count = n()) %>%
+  arrange(desc(count))
+dur
+```
+
+```{r dur-plot,echo=FALSE}
+dur %>% 
+  ggplot(aes(duration,count)) + 
+  geom_point(aes(color = y)) + 
+  ggtitle("Distribution of duration of last contact")
+```
+
+Plot shows duration of over 200 to 750 subscribes term deposit more compared to others. It is also clear longer duration of phone call guarantees term deposit subscription with some exceptions. Almost all people who does not subscribe term deposit decide within first 4 minutes and people who wish to subscribe sometimes take little longer in getting convinced and deciding.
+
+Chi-squared test is run below,
+```{r}
+c_dur <- table(bank_data$duration,bank_data$y)
+chisq_dur <- chisq.test(c_dur,simulate.p.value = TRUE)
+chisq_dur
+```
+
+From the chi-squared test, it is clear that duration variable is an important factor in deciding term deposit subscription as p-value < 0.05. Duration attribute is statistically significant to term deposit subscription.
+
+## Exploration of previous outcome of the campaign 
+What are the different results of the last contact marketing campaign?
+```{r outcome}
+table(bank_data$poutcome)
+```
+
+It has three results - success, failure and nonexistent(no previous contact).
+*success* for client who subscribed term deposit in the last campaign, *failure* for who doesn't subscribe in the last campaign and *non-existent* for no information about outcome of last campaign. There are 32032 nonexistent entries of client's previous marketing campaign results.
+
+## Distribution of outcome of the previous campaign
+Does attribute poutcome is an important factor to be considered while predicting term deposit subscription? Lets see about that.
+```{r out-count,echo=FALSE,message=FALSE,results='hide',warning=FALSE}
+out <- bank_data %>%
+  group_by(poutcome,y) %>%
+  summarize(count = n()) %>%
+  arrange(desc(count))
+out
+```
+
+```{r out-plot,echo=FALSE}
+out %>% 
+  ggplot(aes(x = reorder(poutcome,count), y = count, fill = y)) +
+  geom_bar(stat="identity", position ="dodge") +
+  xlab("Outcome of previous campaign") +
+  facet_grid(~y) +
+  ggtitle("Barplot of distribution of outcome of previous campaign")
+```
+
+From the plot, it is clear success outcome of the previous campaign is the least in number compared to others because they subscribed term deposit last campaign. So, there is not a need to deposit once again this year. The nonexistent outcome of the previous campaign subscribes term deposit more followed by failure. Failure outcome of previous campaign clients who does not subscribe deposit can be targeted next year to coerce them into subscription.
+
+Chi-squared test is run below,
+```{r out-chi,echo=FALSE}
+c_out <- table(bank_data$poutcome,bank_data$y)
+chisq_out <- chisq.test(c_out)
+chisq_out
+```
+One can see p-value is less than 0.05 above for previous outcome of campaign with y. It is clear that previous outcome feature plays a role in subscribing term deposit subscription.
+
+## Exploration of number of contacts performed during this campaign
+What are the different number of contacts performed during this marketing campaign?
+```{r campaign}
+length(unique(bank_data$campaign))
+min(bank_data$campaign)
+max(bank_data$campaign)
+```
+
+42 different number of contacts were performed during the campaign. Minimum number of contact performed for the client during the campaign is 1 whereas maximum number of contact for client is 56. 
+
+## Distribution of contacts during this campaign
+Does attribute campaign is an important factor to be considered while predicting term deposit subscription? Lets see about that.
+```{r con-count,echo=FALSE,message=FALSE,results='hide',warning=FALSE}
+camp <- bank_data %>%
+  group_by(campaign,y) %>% summarize(count = n()) %>% arrange(desc(count))
+camp
+```
+
+```{r con-plot, echo=FALSE}
+# Barplot of the number of contacts for campaign Distribution
+camp %>% 
+  ggplot(aes(reorder(campaign,count),count)) +
+  geom_bar(aes(fill = y),stat = "identity") + 
+  xlab("Campaign") +
+  ggtitle("Barplot of distribution of number of contacts during this campaign")
+```
+
+From the plot, it is clear that one contact with the client subscribes term deposit more followed by 2 and 3. This is due to large proportion of number for one contact during the campaign. This plays an important role in deciding term deposit subscription. Chi-squared test is not applicable for numeric categorical factors.
+
+## Exploration of number of days after last contact from previous campaign
+What are the different number of days that passed by after the client was last contacted from a previous campaign?
+```{r pre-days}
+length(unique(bank_data$pdays))
+min(bank_data$pdays)
+max(bank_data$pdays)
+```
+
+There are 26 different number of days after last contact of the client from previous campaign. Minimum number of days after last contact is 0 whereas maximum number of days are 999. 999 means client was not previously contacted
+
+## Distribution of number of days after last contact in the previous campaign
+Does attribute pdays is an important factor to be considered while predicting term deposit subscription? Lets see about that.
+```{r predays-count,echo=FALSE,message=FALSE,results='hide',warning=FALSE}
+num_of_days <- bank_data %>%
+  group_by(pdays,y) %>% summarize(count = n()) %>% arrange(desc(count))
+num_of_days
+```
+
+```{r pdays-plot,echo=FALSE}
+# Barplot of the number of days after last contact Distribution
+num_of_days %>% 
+  ggplot(aes(reorder(pdays,count),count)) +
+  geom_bar(aes(fill = y),stat = "identity") +
+  xlab("Number of days after last contact") +
+  ggtitle("Barplot of the number of days after last contact Distribution")
+```
+
+From the plot,it is clear that client who was not contacted(999) during previous campaign subscribes term deposit more as they did not subscribe last year. This is also due to the fact that 999 has large proportion of number in the campaign. pdays act as an important factor in term deposit subscription as many new clients who have not contacted during last campaign subscribes term deposit during this campaign.
+
+## Exploration of number of contacts for previous campaign for this client
+What are the different number of contacts performed during previous marketing campaign for this client?
+```{r}
+length(unique(bank_data$previous))
+min(bank_data$previous)
+max(bank_data$previous)
+```
+
+There are eight different number of contacts during previous campaign for the client. Minimum number of contact for the client during previous campaign is 0 whereas maximum number of contact for client is 7.
+
+## Distribution of number of contacts for previous campaign
+Does attribute previous is an important factor to be considered while predicting term deposit subscription? Lets see about that.
+```{r prev-count,echo=FALSE,message=FALSE,results='hide',warning=FALSE}
+prev <- bank_data %>%
+  group_by(previous,y) %>% summarize(count = n()) %>% arrange(desc(count))
+prev
+```
+
+```{r prev-plot,echo=FALSE}
+prev %>% 
+  ggplot(aes(reorder(previous,count),count)) +
+  geom_bar(aes(fill = y),stat = "identity") +
+  xlab("Number of contacts during previous campaign") +
+  ggtitle("Baarplot of the number of contacts for previous campaign Distribution")
+```
+
+From the plot, it is clear that clients who have zero contact during previous campaign subscribes term deposit more followed by one,two etc.,  Obviously, clients who have not contacted last campaign will be contacted this campaign to coerce them into term deposit subscription as well as due to high proportion of number in them. Also clients who have been contacted last year but did not subscribe last campaign subscribes term deposit this campaign with frequent marketing strategies and awareness. So, previous is an important term for term deposit subscription
+
+## Exploration of Employment variation rate
+What are the different employment variation rate in the marketing campaign?
+```{r emp}
+length(unique(bank_data$emp.var.rate))
+table(bank_data$emp.var.rate)
+```
+There are 10 different types of employment variation rate for clients in the campaign. Table lists how many clients have same employment variation rate in the campaign
+
+## Distribution of employment variation rate
+Does employment variation rate of the client affects term deposit subscription?
+```{r emp-count,echo=FALSE,results='hide',warning=FALSE,message=FALSE}
+emp <- bank_data %>%
+  group_by(emp.var.rate,y) %>% summarize(count = n()) %>% arrange(desc(count))
+emp
+```
+
+```{r emp-plot,echo=FALSE,message=FALSE}
+emp %>% 
+  ggplot(aes(reorder(emp.var.rate,count),count)) +
+  geom_bar(aes(fill = y),stat = "identity") +
+  xlab("Employment variation rate") +
+  ggtitle("Histogram of the Employment variation rate Distribution")
+```
+
+Plot shows employment variation rate of 1.4 subscribes term deposit much followed by -1.8 and 1.1. This figure may be due to large proportion of number. Employment variation rate of -0.2 subscribes term deposit in low number
+
+## Exploration of Consumer price index
+What are the different consumer price indexes for client in the campaign?
+
+```{r cons-price}
+length(unique(bank_data$cons.price.idx))
+table(bank_data$cons.price.idx)
+```
+There are 26 different types of consumer price index for clients in the campaign. Table lists how many clients have same consumer price index in the campaign
+
+## Distribution of Consumer price index
+Does consumer price index affects term deposit subscription?
+```{r cons-price-count, echo=FALSE,message=FALSE,warning=FALSE,results='hide'}
+cons_price <- bank_data %>%
+  group_by(cons.price.idx,y) %>% summarize(count = n()) %>% arrange(desc(count))
+cons_price
+```
+
+```{r cons-price-plot,echo=FALSE}
+cons_price %>% 
+  ggplot(aes(reorder(cons.price.idx,count),count)) +
+  geom_bar(aes(fill = y),stat = "identity") +
+  xlab("Consumer price index") +
+  ggtitle("Barplot of the Consumer price index Distribution")
+```
+
+Plot shows consumer price index of 92.893 subscribes term deposit much followed by 93.095. Consumer price index of 92.756 subscribes term deposit in low number. From the figure one can observe changes in consumer price index increases term deposit subscription. So, consumer price index affects term deposit subscription
+
+## Exploration of Consumer Confidence index
+What are the different consumer confidence indexes for client in the campaign?
+```{r cons-conf}
+length(unique(bank_data$cons.conf.idx))
+table(bank_data$cons.conf.idx)
+```
+
+There are 26 different types of consumer confidence index for clients in the campaign. Table lists how many clients have same consumer confidence index in the campaign
+
+## Distribution of Consumer Confidence index
+Does consumer price index affects term deposit subscription?
+```{r cons-conf-count, echo=FALSE,message=FALSE,warning=FALSE,results='hide'}
+cons_conf <- bank_data %>% 
+  group_by(cons.conf.idx,y) %>% summarize(count = n()) %>% arrange(desc(count))
+cons_conf
+```
+
+```{r cons-conf-plot,echo=FALSE}
+cons_conf %>% 
+  ggplot(aes(reorder(cons.conf.idx,count),count)) +
+  geom_bar(aes(fill = y),stat = "identity") +
+  xlab("Consumer Confidence index") +
+  ggtitle("Barplot of the Consumer Confidence index Distribution")
+```
+
+Plot shows consumer price index of -46.02 subscribes term deposit much followed by -47.1. Consumer price index of -40.4 subscribes term deposit in low number. From the figure one can observe changes in consumer confidence index increases term deposit subscription
+
+## Exploration of Euribor 3 month rate
+What are the different Euribor 3 month rate for client in the campaign? 
+```{r euro}
+length(unique(bank_data$euribor3m))
+```
+There are 316 different types of euribor 3month rate for clients in the campaign.
+
+## Distribution of Euribor 3 month rate
+Does Euribor 3 month rate affects term deposit subscription?
+```{r euro-count,echo=FALSE,message=FALSE,warning=FALSE,results='hide'}
+eur <- bank_data %>%
+  group_by(euribor3m,y) %>% summarize(count = n()) %>% arrange(desc(count))
+eur
+```
+
+```{r euro-plot,echo=FALSE}
+eur %>% 
+  ggplot(aes(reorder(euribor3m,count),count)) +
+  geom_bar(aes(fill = y),stat = "identity") +
+  xlab("Euribor 3 month rate") +
+  ggtitle("Histogram of Euribor 3 month rate Distribution")
+```
+
+From the plot, one can observe changes in changes in euribor 3month rate increases term deposit subscription. As well as low euribor rate has low term deposit subscription.
+
+## Exploration of number of employees
+How many different number of employees are in the campaign? 
+```{r no-emp}
+length(unique(bank_data$nr.employed))
+table(bank_data$nr.employed)
+```
+Table shows how many clients belong to the same number of employees in the campaign.
+
+## Distribution of number of employees
+Does number of employees affects term deposit subscription?
+```{r no-emp-count,echo=FALSE,message=FALSE,warning=FALSE,results='hide'}
+num_emp <- bank_data %>%
+  group_by(nr.employed,y) %>% summarize(count = n()) %>% arrange(desc(count))
+num_emp
+```
+
+```{r no-emp-plot,echo=FALSE,warning=FALSE}
+bank_data %>% 
+  ggplot(aes(nr.employed,fill = y)) +
+  geom_histogram(stat = "count",bins = 30, color = "black") +
+  ggtitle("Histogram of number of employees Distribution")
+```
+
+From the plot, it is clear that 5099.1 no. of employees subscribes term deposit higher compared to others.
+
+# Model Analysis and Results
+
+To compare different models with their accuracies in predicting term deposit subscription, split  bank_data further into training and testing sets as bank_train_data & bank_validation_data. The model which gives highest accuracy is taken and tested against validation set(final holdout test) to determine accuracy and to evaluate model performance.
+```{r split-again,results='hide',message=FALSE,warning=FALSE}
+set.seed(1, sample.kind="Rounding")
+test_index1 <- createDataPartition(y = bank_data$y, times = 1, p = 0.1, list = FALSE)
+bank_train_data <- bank_data[-test_index1,]
+bank_temp_data <- bank_data[test_index1,]
+# Make sure euribor3m in bank_validation_data set are also in bank_train_data set
+bank_validation_data <- bank_temp_data %>%
+  semi_join(bank_train_data, by = "euribor3m")
+# Bring back removed rows from bank_validation_data to bank_train_data set 
+removed <- anti_join(bank_temp_data, bank_validation_data)
+bank_train_data <- rbind(bank_train_data, removed)
+rm( test_index1, bank_temp_data, removed) #Clear out unwanted files
+```
+General overview of the dataset:
+```{r second-split-overview}
+# Number of observations(rows and columns) in the dataset
+dim(bank_train_data)
+dim(bank_validation_data)
+```
+There are 33366 rows and 21 columns in training set. There are 3705 rows and 21 columns in test set.
+
+Depending on the data exploration and visualization of the bank marketing data, we get to know which attribute reflects on term deposit subscription. By considering the attributes which contribute to subscription, I built a system made of classification and regression models. The former one is done with the help of *rminer* package while the latter is done by caret package. I have constructed 14 rminer classification models and one base caret regression model. Classification models are Naive Bayes model, KNN(K- Nearest Neighbor) model, Conditional inference tree model, eXtreme Gradient Boosting model, Support Vector Machine, Least Squares Support Vector Machine, Random Forest method, Linear Discriminant Analysis, Generalised Linear model, Multilayer perceptron, Logistic Regression(multinom), Bagging, Adaboost, Decision tree. Regression model is Logistic regression from caret package.
+
+The main objective of the project is to predict term deposit subscription. This is done by implementing every model and analyzing the obtained results and choosing the best one which gives the highest accuracy in predicting deposit subscription.
+
+## Evaluation metrics:
+After building the model and predicting term deposit subscription, one of the final steps is evaluating the model performance. The evaluation metrics are Confusion matrix, Accuracy, Sensitivity, Specificity, AUC, F1 score etc., 
+
+**Confusion Matrix** : It is an N X N matrix, where N is the number of classes to be predicted. In our project, target variable(y) is a binary class.i.e, N=2, and hence we get a 2 X 2 matrix. It is a summary of prediction results on a classification problem. The number of correct and incorrect predictions are summarized with count values and broken down by each class. It is used to visualize important predictive analytics like recall, specificity, accuracy, and precision. Confusion matrices are useful because they give direct comparisons of values like True Positives, False Positives, True Negatives and False Negatives.
+
+**Accuracy** :  the proportion of the total number of predictions that were correct. The problem with using accuracy as your main performance metric is that it does not do well when you have a severe class imbalance.
+ 
+**Positive Predictive Value or Precision** : indicates the rate at which positive predictions are correct. Precision tells us how many of the correctly predicted cases actually turned out to be positive. This would determine whether our model is reliable or not.
+
+**Sensitivity or Recall or true positive rate** : the proportion of actual positive cases which are correctly identified. How many correct items are predicted?
+
+**Specificity or True Negative Rate** : the proportion of actual negative cases which are correctly identified.
+
+Ideally, a test should provide a high sensitivity and specificity. A highly sensitive test means that there are few false negative results, and thus fewer cases of disease are missed. A highly specific test means that there are few false positive results.
+
+**F1-score** : F1-Score is the harmonic mean of precision and recall values for a classification problem. A good F1 score means that you have low false positives and low false negatives, so you’re correctly identifying real threats and you are not disturbed by false alarms. An F1 score is considered perfect when it is 1, while the model is a total failure when it is 0.
+
+**ROC curve** : The Receiver Operator Characteristic(ROC) curve is an evaluation metric for binary classification problems. It is a probability curve that plots TPR against FPR at various threshold values and separates signal from the noise.
+
+**AUC**: It is an area below the ROC curve. It is the measure of ability of a classifier to distinguish between classes. Higher the AUC, better the performance of the model.
+
+In this section, each algorithm model with their effects are evaluated for model performance:
+
+## Regression model
+Regression in machine learning consists of atatistical and mathematical methods that allow data scientists to predict a continuous outcome (y) based on the value of one or more predictor variables (x). Linear regression is probably the most popular form of regression analysis because of its ease-of-use in predicting the model. It is a supervised technique.It is a statistical method to model the relationship between a dependent (target) and independent (predictor) variables with one or more independent variables. More specifically, Regression analysis helps us to understand how the value of the dependent variable is changing corresponding to an independent variable when other independent variables are held fixed. It predicts continuous/real values. 
+In this project, I use base logistic regression to predict term deposit subscription by selecting appropriate attributes that influence the model.
+
+### Logistic Regression
+Logistic regression is another supervised learning algorithm which is used to solve the classification problems. Logistic regression algorithm works with the categorical variable such as 0 or 1, Yes or No, True or False, Spam or not spam, etc. It is a predictive analysis algorithm which works on the concept of probability. To avoid false predictions,  the variance should be low. For that reason, the model should be generalized to accept unseen features of temperature data and produce better predictions. For a model to be ideal, it’s expected to have low variance, low bias and low error. 
+
+To improve the model, features of the model should be evaluated and check which attributes affect the model thereby removing the unnecessary attributes which is withhelding the improvement of the model.
+
+### Data Transformation
+Since Logistic regression takes numeric categorical values, transform the target variable y(term deposit subscription) into numeric from factor. The levels of y should be 0 for no and 1 for yes. It is done by using base as.numeric() function.
+```{r log-transform}
+bank_train_data <- bank_train_data %>% mutate(y = as.numeric(bank_train_data$y=="yes"))
+bank_validation_data <- bank_validation_data %>%
+  mutate(y = as.numeric(bank_validation_data$y=="yes"))
+str(bank_train_data$y)
+str(bank_validation_data$y)
+```
+As one can see, target variable y has been converted into numeric for making prediction for regerssion method.
+
+As we already know, duration attribute cannot be used since it is not known before a call is performed. This makes difficult to have a real predictive model. So, duration variable is discarded from the dataset.
+
+```{r log-fit}
+bank_glm <- glm(y ~. -duration, data = bank_train_data, family = "binomial")
+```
+To remove warnings from the above model, we should remove NAs from dataset. Consumer confidence index and Consumer price index attributes have NAs. So, remove those attributes and fit the model once again and see whether the model gives warning.
+```{r glm-fit,warning=FALSE,echo=FALSE}
+f_glm <- glm(y ~. -duration -cons.price.idx - cons.conf.idx , data = bank_train_data,
+             family = binomial)
+p_h <- predict(f_glm, newdata = bank_validation_data, type = "response")
+y_hat <- factor(ifelse(p_h> 0.5, 1, 0))
+c1 <- confusionMatrix( y_hat,as.factor(bank_validation_data$y)) 
+acc_log_reg_base <- c1$overall["Accuracy"]
+c1$byClass
+# Lets tabulate the results
+Regression_Accuracy_results <- tibble(Model = "Base Logistic Regression model",
+                           Accuracy = acc_log_reg_base)
+Regression_Accuracy_results %>% knitr::kable()
+```
+It produces accuracy of about 0.9053. This model has high sensitivity value(0.9811378). 98% sensitivity will identify 98% of clients who subscribes term deposit subscription. F1 score is 0.9483899. F1 score > 0.90 is considered as a good model. 0.9177575, Precision denotes that this model is a reliable model.
+
+The step function removes all features which are not statistically dependent to target variable. i.e, it selects only features which contributes to prediction of term deposit subscription. After running step function, 17 attributes are further reduced to 10 attributes which primarily contributes in predicting term deposit subscription. These attributes are then modeled once again to get better prediction. The above variables tends to subscribe bank’s term deposit.
+
+```{r glm-final,echo=FALSE,warning=FALSE}
+# Now lets remove all variables whose p value is >0.05 using step function.
+fit=step(f_glm)
+print(fit$call)
+fit_final = glm(y ~ default + contact + month + day_of_week + campaign + 
+                  pdays + previous + poutcome + emp.var.rate + euribor3m,  
+                data = bank_train_data, family = "binomial")
+p_hat_glm <- predict(fit_final, bank_validation_data, type="response")
+y_hat_gl2 <- factor(ifelse(p_hat_glm > 0.5, 1, 0))
+c <- confusionMatrix(y_hat_gl2,as.factor(bank_validation_data$y)) 
+acc_log_reg_step <- c$overall["Accuracy"]
+c$byClass
+# Lets tabulate the results
+Regression_Accuracy_results <- bind_rows(Regression_Accuracy_results,
+                              tibble(Model = "Step Logistic Regression model",
+                                                      Accuracy = acc_log_reg_step))
+Regression_Accuracy_results %>% knitr::kable()
+```
+
+The goal of this model is to remove the unnecessary attributes withholding the model performance and to find the required attributes that affects prediction of term deposit subscription.
+
+From the code implementation in R file, The accuracy is 0.9039136. It has high sensitivity value(0.9808336) and high precision value(0.9177575) thereby making a reliable model. Model's F1 score is 0.9476778. Though this model has 90% accuracy and F1 score(0.947), it takes 2 hours for implementation and execution. Hence, this model is computationally time inefficient. The step logistic regression model's accuracy and F1 score is lower compared to Base Logistic Regression model.
+
+## Classfication model- Rminer
+Classification model is implemented with the help of rminer package. Rminer package can execute classification and regression data mining tasks, including in particular three CRISP-DM stages: data preparation, modeling and evaluation. The particular case of time series forecasting can also be evaluated if needed. The goal is to provide reduced and coherent set of R functions to perform classification and regression. It saves more time because of fast implementation of the model and by executing full data mining tasks with few lines of code.
+
+The data preparation stage of CRISP-DM may include several tasks, such as data selection, cleaning and transformation. Since data selection and cleaning is done in the first phase of the data exploration and visualization section, it is not necessary to repeat the same data extraction and cleaning(scanning NA values) process once again. Now, we move to data transformation. Data transformation is a crucial step for achieving a successful data mining project and it includes several operations, such as  attribute and instance selection, assuring data quality and transforming attributes to a required format for model implementation.
+
+### Data Transformation
+Since, regression model converts output variable into numeric, classification model can't work. Because, classification model is based on factor levels. So, convert numeric to factor data type for target variable(y). It involves two steps: 1. Convert numeric to character and 2. Convert character to factor
+```{r reg-class-transform}
+bank_train_data$y <- ifelse(bank_train_data$y == 1, "yes","no")
+str(bank_train_data$y) # character
+bank_train_data <- mutate(bank_train_data, y = as.factor(y))
+str(bank_train_data$y) # factor
+
+bank_validation_data$y <- ifelse(bank_validation_data$y == 1, "yes","no")
+str(bank_validation_data$y) #character
+bank_validation_data <- mutate(bank_validation_data, y = as.factor(y))
+str(bank_validation_data$y) # factor
+```
+
+Since R cannot handle categorical predictors more than 53 in fit() function for some models, check all the attributes factor levels with the help of str() function. We find attribute euribor3m is a factor with 316 levels of categories. So, convert factor to numeric for variable euribor3m in the training and testing data set.
+
+```{r euro-convert,echo=FALSE}
+str(bank_train_data)
+bank_train_data <- bank_train_data %>%
+  mutate(euribor3m = as.numeric(as.character(euribor3m)))
+bank_validation_data <- bank_validation_data %>% mutate(euribor3m = as.numeric(as.character(euribor3m)))
+str(bank_train_data$euribor3m)
+str(bank_validation_data$euribor3m)
+bank_data <- bank_data %>% mutate(euribor3m = as.numeric(as.character(euribor3m)))
+str(bank_data$euribor3m)
+```
+
+From the above results, we can see variable euribor3m of training and validation sets has been converted from factor to numeric for model implementation purposes.
+Next, we proceed to implementation of every rminer classification model and evaluating their model performance by training and testing the dataset. The optimal model is identified by maximum accuracy of the model.
+
+In rminer package, holdout() function splits the banking data into training and test sets and computes indexes for them to use for fitting and predicting the model for future. The fit() function in rminer is a supervised data mining model. It is a wrapper function that consists of 16 classification and 18 regression methods inside it under the same coherent function structure. Also, it tunes the hyperparameters of the models (e.g., kknn, mlpe and
+ksvm) and performs some feature selection methods. Since fit() wraps everything around same structure, it is easy to implement the model just by calling the model name thereby saving time for writing code and executing it. The mmetric function computes classification or regression error metrics. The mmetric function predicts all metrics such as confusion matrix, accuracy rate, weighted average ACC score,  classification error, Mean Spearman’s rho coefficient for ranking, kappa index, accuracy rate per class, true positive rate, mean absolute error etc., 
+
+
+### 1. Naive Bayes model
+The Naive Bayes model is based on conditional probabilities. It uses Bayes theorem, that calculates probability by counting the frequency of values and combinations of values in the historical data. The fundamental assumption of Naive Bayes is that, given the value of the label (the class), the value of any Attribute is independent of the value of any other Attribute. The independence assumption vastly simplifies the calculations needed to build the Naive Bayes probability model. Naive Bayes can be used for both binary and multiclass classification problems. It supports parallel execution. Thus it is fast to implement the model.
+
+Bayes' theorem finds the probability of an event occurring given the probability of another event that has already occurred. If B represents the dependent event and A represents the previous event, Bayes' theorem can be stated as follows:
+$$P(B|A) = P(A and B)/P(A)$$
+To calculate the probability of B given A, the algorithm counts the number of cases where A and B occur together and divides it by the number of cases where A occurs alone.
+
+In rminer Naive Bayes model, *bank_data* is split into two parts as testing and training datasets by holdout() function. It splits the data set into two ways, 2/3 for training the model and 1/3 for testing the model. The fit() function accomodates naive bayes model into it and we can execute it by calling the model name(naiveBayes or naivebayes). The fit() uses naiveBayes from e1071 package for implementation. The model is trained using fit() function and predicted against test(validation) dataset. For finding accuracy and confusion matrix, mmetric() function is used. 
+```{r naivebayes,echo=FALSE}
+# NaiveBayes Model
+H=holdout(bank_data$y,ratio=2/3)
+M=fit(y~., bank_data[H$tr,],model="naiveBayes")
+P=predict(M,bank_data[H$ts,])
+print("AUC of ROC curve:")
+print(mmetric(bank_data$y[H$ts],P,"AUC")[[1]]) # ROC
+print(mmetric(bank_data$y[H$ts],P,"CONF")) # Confusion matrix
+print("All metrics:")
+print(mmetric(bank_data$y[H$ts],P,"ALL"))
+print("Accuracy:")
+round(mmetric(bank_data$y[H$ts],P,metric="ACC"),2) # Accuracy
+```
+Though we get a good accuracy value, we see attribute duration highly affects the output target (e.g., if duration=0 then y='no'). Yet, the duration is not known before a call is performed. Also, after the end of the call y is obviously known. Thus, this input should only be included for benchmark purposes and should be discarded if the intention is to have a realistic predictive model. 
+
+So, remove attribute duration from the dataset for every model and predict term deposit subscription.
+
+```{r naivebayes-dur,echo=FALSE}
+M1 = fit(y ~. -duration,bank_data[H$tr,], model = "naiveBayes")
+P1 = predict(M1,bank_data[H$ts,])
+print("AUC of ROC curve:")
+auc <- print(mmetric(bank_data$y[H$ts],P1,"AUC")[[1]]) #ROC
+print(mmetric(bank_data$y[H$ts],P1,"CONF"))
+print("F1 score: ")
+f1_naive <- print(mmetric(bank_data$y[H$ts],P1,"macroF1"))
+acc <- round(mmetric(bank_data$y[H$ts],P1,metric="ACC"),2) # Accuracy
+# Lets tabulate the results
+Accuracy_results <- tibble(Model = "Naive Bayes Model",
+                           Accuracy = acc,
+                           AUC = auc,
+                           F1_score = f1_naive )
+Accuracy_results %>% knitr::kable()
+```
+By Naive Bayes model, we get overall area under the curve of ROC as `r auc`. The accuracy is `r acc`%. Though accuracy has been reduced by around 1 point, it is necessary to remove duration attribute from the dataset. Also, F1 score is average(`r f1_naive`%). It is not the better one. We can implement further models and see whether accuracy has been increased or not. From the above, one can say Naive Bayes model is simple to use and computationally inexpensive.
+
+### 2. KNN(K-Nearest Neighbor) model
+The k-nearest neighbors (KNN) model is a simple, easy-to-implement supervised machine learning algorithm that can be used to solve both classification and regression problems. Even with such simplicity, it can give highly competitive results. The KNN algorithm is implemented by assuming that similar things are nearer to each other. "Closeness" or "Nearness" is defined in terms of a distance in the n-dimensional space, defined by the n Attributes in the training set. It calculates the distance between the unknown point and the training points by different metrics such as Euclidean distance etc.,
+
+It is implemented in rminer package similar to naivebayes model using fit() and predict functions. The fit function trains the model whereas predict function tests the model. The mmetric function finds accuracy, confusion matrix and all metrics. The KNN model in rminer package uses kknn from kknn package. KNN model is implemented as:
+```{r knn,echo=FALSE}
+H=holdout(bank_data$y,ratio=2/3)
+M2 = fit(y ~. -duration,bank_data[H$tr,], model = "kknn")
+P2 = predict(M2,bank_data[H$ts,])
+print("AUC of ROC:")
+auc_knn <- print(mmetric(bank_data$y[H$ts],P2,"AUC")[[1]]) 
+print(mmetric(bank_data$y[H$ts],P2,"CONF"))
+print("F1 score: ")
+f1_knn <- print(mmetric(bank_data$y[H$ts],P2,"macroF1"))
+acc_knn <- round(mmetric(bank_data$y[H$ts],P2,metric="ACC"),2)
+# Lets tabulate the results
+Accuracy_results <- bind_rows(Accuracy_results,tibble(Model = "KNN Model",
+                                                      Accuracy = acc_knn,
+                                                      AUC = auc_knn,
+                                                      F1_score = f1_knn))
+Accuracy_results %>% knitr::kable()
+```
+
+By K-Nearest Neighbor(KNN) model, the accuracy has been increased to `r acc_knn` compared to previous model and the overall area under the curve(AUC) of ROC is `r auc_knn`%. F1 score is `r f1_knn`. Though this model has increased accuracy , AUC and ROC is lower compared to previous ones. This implies knn is not a better model in predicting term deposit subscription.
+
+### 3.1 Conditional inference Tree model(cTree)
+cTree is a non-parametric class of classification and regression trees embedding tree-structured models into a well defined theory of conditional inference procedures. It is a statistical approach [to recursive partitioning] which takes into account the
+distributional properties of the measures. The conditional distribution of statistics measuring the association between responses and covariates is the basis for an unbiased selection among covariates measured at different scales. Moreover, multiple test procedures are applied to determine whether no significant association between any of the covariates and the response can be stated and the recursion needs to stop.
+
+In rminer package, Conditional inference Tree model(cTree) uses ctree from party package. The fit function trains the model and predict function predicts term deposit subscription. The mmetric function finds out all error metrics. Ctree model is implemented as:
+
+```{r ctree, echo=FALSE}
+H=holdout(bank_data$y,ratio=2/3)
+M3 = fit(y~.-duration,bank_train_data,model="ctree")
+P3=predict(M3,bank_validation_data)
+print(mmetric(bank_validation_data$y,P3,"CONF"))
+print("AUC of ROC:")
+auc_ctree <- print(mmetric(bank_validation_data$y,P3,"AUC")[[1]]) 
+print("F1 score: ")
+f1_ctree <- print(mmetric(bank_validation_data$y,P3,"macroF1"))
+acc_ctree <- round(mmetric(bank_validation_data$y,P3,metric="ACC"),2) 
+# Lets tabulate the results
+Accuracy_results <- bind_rows(Accuracy_results,
+                              tibble(Model = "cTree Model",
+                                     Accuracy = acc_ctree,
+                                     AUC = auc_ctree,
+                                     F1_score = f1_ctree))
+Accuracy_results %>% knitr::kable()
+```
+The accuracy of the cTree model is 91.55%. One can see good change of accuracy compared to previous models(increased by 3 points). Also, F1 score is around 78% and AUC of ROC is 0.94391928. AUC > 0.9 is considered as a better model. Hence, ctree is a good model with increased accuracy, F1 score and AUC.
+
+### 3.2 Conditional inference Tree model(cTree) by internal validation
+
+cTree model by internal validation is a resampling procedure used to evaluate machine learning models on a limited data sample. Internal validation came into picture because the estimate obtained on the training set is generally lower than the estimate obtained with the test set, with the difference larger for smaller values of k due to over-training. Internal validation helps us to avoid over-training and overfitting of the model. It has single parameter k, that refers to the number of groups that a given data sample is split into. Therefore, it is called k-fold validation. When a specific value for k is chosen, such as k=10 becomes 10-fold validation.
+
+In rminer package, cTree by internal validation uses mparheuristic function that returns a list of searching (hyper)parameters for a particular model or for a multiple list of models. The result is to be put in a search argument, used by fit or mining functions. The n arguement in mparheuristic() is number of searches or heuristic for the model. The lower and upper argument is a sequence of window(values) for k-value to be chosen. 
+
+Here, Internal validation uses 10-fold validation for better accuracy and to avoid overtraining and overfitting of the model. Internal validation trains the model with the evaluation of AUC(overall area under the curve) of ROC at every search.
+```{r ctree-val,echo=FALSE}
+mint=c("kfold",10,123) # internal validation method
+s=list(search=mparheuristic("ctree",n=8,lower=0.1,upper=0.99),method=mint,metric = "AUC")
+M_heu=fit(y~. -duration,bank_train_data,model="ctree",search=s,fdebug=TRUE)
+P_heu=predict(M_heu,bank_validation_data)
+print(mmetric(bank_validation_data$y,P_heu,"CONF"))
+print("AUC of ROC:")
+auc_ctreeval <- print(mmetric(bank_validation_data$y,P_heu,"AUC")[[1]]) 
+print("F1 score: ")
+f1_ctreeval <- print(mmetric(bank_validation_data$y,P_heu,"macroF1"))
+acc_ctreeval <- round(mmetric(bank_validation_data$y,P_heu,metric="ACC"),2) 
+# Lets tabulate the results
+Accuracy_results <- bind_rows(Accuracy_results,
+                              tibble(Model = "cTree Model by 10-fold internal validation",
+                                     Accuracy = acc_ctreeval,
+                                     AUC = auc_ctreeval,
+                                     F1_score = f1_ctreeval))
+Accuracy_results %>% knitr::kable()
+```
+The accuracy of the model is increased to 91.71% by 10-fold internal validation of the conditional inference tree. Here, at each fold, it picks observations at random with replacement (which means the same observation can appear twice). F1 score(`r f1_ctreeval`%) is slightly improved and AUC is 0.9434025.
+
+### 4. eXtremeGradientBoosting(Tree) model
+XGBoost stands for eXtreme Gradient Boosting. This algorithm came into existence to push the limit of computations resources for boosted tree algorithms. It uses Parallelization of tree construction technique by using all the CPU cores during training of the model. The implementation of the algorithm was engineered for efficiency of compute time and memory resources.
+
+Gradient boosting refers to a class of ensemble machine learning algorithms that can be used for classification or regression predictive modeling problems. Ensembles are constructed from decision tree models. Trees are added one at a time to the ensemble and fit to correct the prediction errors made by prior models. This type of ensemble machine learning model is referred as boosting. Models are fit using any arbitrary differentiable loss function and gradient descent optimization algorithm. This gives the technique its name, “gradient boosting,” as the loss gradient is minimized as the model is fit, much like a neural network.
+
+In rminer package, xgboost algorithm is implemented from xgboost package. Here, nrounds parameter is set by default to 2. The parameter nrounds implies number of decision trees in the final model. The fit and predict function trains and test the model performance. XGBoost is implemented as:
+```{r xgboost,echo=FALSE,warning=FALSE}
+H=holdout(bank_data$y,ratio=2/3)
+M4=fit(y~. -duration,bank_data[H$tr,],model="xgboost",verbose=1)
+P4=predict(M4,bank_data[H$ts,]) # nrounds=2, that is default value
+print("Overall area under the curve of ROC:")
+auc_xgb <- print(mmetric(bank_data[H$ts,]$y,P4,"AUC")) 
+print(mmetric(bank_data$y[H$ts],P4,"CONF"))
+print("F1 score: ")
+f1_xgb <- print(mmetric(bank_data$y[H$ts],P4,"macroF1"))
+acc_xgb <- round(mmetric(bank_data[H$ts,]$y,P4,metric="ACC"),2) 
+# Lets tabulate the results
+Accuracy_results <- bind_rows(Accuracy_results,
+                              tibble(Model = "eXtremeGradientBoosting model",
+                                     Accuracy = acc_xgb,
+                                     AUC = auc_xgb,
+                                     F1_score = f1_xgb))
+Accuracy_results %>% knitr::kable()
+```
+The accuracy value for this model is `r acc_xgb`% and Overall area under the curve of ROC is `r auc_xgb`. When compared to cTree model, XGBoost model accuracy is lesser by 3 points but higher than KNN model. F1 score is`r f1_xgb`%. Compared to knn and naive bayes model, F1 score is low for xgboost model.
+
+To check if accuracy improves, when number of decision trees in the model is changed to 3. Lets implement the model below:
+
+```{r xgboost-nround,echo=FALSE,warning=FALSE}
+M_round = fit(y~. -duration,bank_data[H$tr,],model="xgboost",nrounds=3,verbose=1) 
+P_round=predict(M_round,bank_data[H$ts,])
+print("Overall area under the curve of ROC:")
+auc_nr <- print(mmetric(bank_data[H$ts,]$y,P_round,"AUC")) 
+print("F1 score: ")
+f1_xgb_round <- print(mmetric(bank_data$y[H$ts],P_round,"macroF1"))
+acc_nr <- round(mmetric(bank_data[H$ts,]$y,P_round,metric="ACC"),2)
+# Lets tabulate the results
+Accuracy_results <- bind_rows(Accuracy_results,
+                              tibble(Model = "XGBoost Model(when nrounds = 3)",
+                                     Accuracy = acc_nr,
+                                     AUC = auc_nr,
+                                     F1_score = f1_xgb_round))
+Accuracy_results %>% knitr::kable()
+```
+One can see, after changing nrounds parameter as 3 in XGBoost model, there is a very slight change in accuracy of the model. The accuracy is changed as `r acc_nr`% and AUC value is improved to `r auc_nr` compared to knn model. But F1 score is decreased(around `r f1_xgb_round`%).
+
+### 5. Support Vector Machine model
+Support Vector Machine is a supervised machine learning model with associated learning algorithms that analyze data for classification and regression analysis. It is widely used for classification models. Given a set of training examples, each belonging to one of two categories, SVM training algorithm builds a model that assigns new examples to one category or the other, making it a non-probabilistic binary linear classifier. SVM maps training examples to points in space so as to maximise the width of the gap between the two categories. New examples are then mapped into that same space and predicted to belong to a category based on which side of the gap they fall. In addition, SVM can efficiently perform a non-linear classification using kernel trick by implicitly mapping their inputs into high-dimensional feature spaces.  
+
+In the SVM algorithm, to maximize the margin between the data points and the hyperplane, loss function named hinge loss is used. It is represented as,
+$$c(x,y,f(x)) = (1-y*f(x))_+$$
+The cost is 0 if the predicted value and the actual value are of the same sign. If they are not, we then calculate the loss value. We also add a regularization parameter to the cost function. The objective of the regularization parameter is to balance the margin maximization and loss. After adding the regularization parameter, the cost functions looks as below.
+$$min_w{\lambda} ||w||^2 + \sum_{i = 1}^{n} (1-y_i(x_i,w))_+$$
+In rminer package, Support Vector machine is a classification model with discrete classes and probabilities. It uses ksvm from kernlab package. The fit and predict function trains and test the model performance. SVM model is implemented as:
+```{r svm,echo=FALSE}
+H=holdout(bank_data$y,ratio=2/3)
+M5=fit(y~. -duration,bank_data[H$tr,],model="ksvm",task="class")
+P5=predict(M5,bank_data[H$ts,]) # classes
+print(mmetric(bank_data$y[H$ts],P5,"CONF"))
+print("F1 score: ")
+f1_svm <- print(mmetric(bank_data$y[H$ts],P5,"macroF1"))
+acc_svm <- round(mmetric(bank_data$y[H$ts],P5,metric="ACC"),2) 
+# Lets tabulate the results
+Accuracy_results <- bind_rows(Accuracy_results,
+                              tibble(Model = "SVM model with classes",
+                                     Accuracy = acc_svm,
+                                     F1_score = f1_svm))
+Accuracy_results %>% knitr::kable()
+```
+
+Here, svm uses class as a task parameter. I.e, svm is a two class classification model. This model's accuracy in predicting term deposit subscription is `r acc_svm`%. SVM model prediction has slight varied accuracy when compared to XGBoost model. It has increased F1 score as `r f1_svm`% compared to xgboost models. SVM with classes can't determine overall area under the curve of ROC.
+
+When svm uses probability as a task parameter, does accuracy improves for predicting term deposit subscription? It can be implemented as:
+```{r svm-prob,echo=FALSE}
+M7=fit(y~. -duration,bank_data[H$tr,],model="ksvm",task="prob")
+P7=predict(M7,bank_data[H$ts,])
+print(mmetric(bank_data$y[H$ts],P7,"CONF"))
+print("Overall area under the curve of ROC:")
+auc_svm_prob <- print(mmetric(bank_data[H$ts,]$y,P7,"AUC")) 
+print("F1 score: ")
+f1_svm_prob <- print(mmetric(bank_data$y[H$ts],P7,"macroF1"))
+acc_svm_prob <- round(mmetric(bank_data$y[H$ts],P7,metric="ACC"),2) 
+# Lets tabulate the results
+Accuracy_results <- bind_rows(Accuracy_results,
+                              tibble(Model = "SVM model with probability",
+                                     Accuracy = acc_svm_prob,
+                                     AUC = auc_svm_prob,
+                                     F1_score = f1_svm_prob))
+Accuracy_results %>% knitr::kable()
+```
+Support vector machine is an elegant and powerful algorithm. It predicts term deposit subscription of accuracy about `r acc_svm_prob`%. The accuracy of the model has very slightly varied when task becomes probability compared to classes. F1 score(`r f1_svm_prob`%) is smaller than the svm with classes. AUC of ROC is lesser(`r auc_svm_prob`) compared to knn and naive bayes model.
+
+### 6. LSSVM model
+LSSVM stands for Least Squares Support Vector Machines. It uses least squares versions of support-vector machines (SVM), which are a set of related supervised learning methods that analyze data and recognize patterns. In this model, a set of linear equations is solved instead of a convex quadratic programming (QP) problem for classical SVMs. The algorithm is based on the minimization of a classical penalized least-squares cost function.
+
+ LSSVM uses a set of linear equations during the training process and chooses all training data as support vectors, so it has excellent generalization and low computation complexity. According to the parallel test results, LS-SVM is preferred especially for large scale problem, because its solution procedure has high efficiency and after pruning both sparseness and performance of LS-SVM are comparable with those of SVM[2]. 
+ 
+LS-SVM classifier is represented as:
+$$J_2(w,b,e) = \mu E_W + \zeta E_D$$
+with $$E_W = \frac{1}{2} w^Tw$$ and 
+$$E_D = \frac{1}{2} \sum_{i = 1}^N e_i^2 = \sum_{i = 1}^N (y_i - (w^T \phi (x_i) + b))^2 $$.
+
+Both $\mu$  and $\zeta$  should be considered as hyperparameters to tune the amount of regularization versus the sum squared error. The solution does only depend on the ratio 
+$$ \gamma =\zeta / \mu $$, 
+therefore the original formulation uses only $\gamma$  as tuning parameter.
+
+In rminer package, lssvm model uses lssvm from kernlab package. It is a pure classification model. lssvm includes a reduced version of Least Squares SVM using a decomposition of the kernel matrix which is calculated by the csi function. The fit and predict function trains and test the model performance. LSSVM model is implemented as:
+```{r lssvm,echo=FALSE}
+H=holdout(bank_data$y,ratio=2/3)
+M6=fit(y~. -duration,bank_data[H$tr,],model="lssvm") # default task="class" is assumed
+P6=predict(M6,bank_data[H$ts,]) # classes
+print(mmetric(bank_data$y[H$ts],P6,"CONF"))
+print("F1 score: ")
+f1_lssvm <- print(mmetric(bank_data$y[H$ts],P6,"macroF1"))
+acc_lssvm <- round(mmetric(bank_data$y[H$ts],P6,metric="ACC"),2) 
+# Lets tabulate the results
+Accuracy_results <- bind_rows(Accuracy_results,
+                              tibble(Model = "LSSVM model with classes",
+                                     Accuracy = acc_lssvm,
+                                     F1_score = f1_lssvm))
+Accuracy_results %>% knitr::kable()
+```
+LSSVM model does not improve accuracy compared to SVM with classes and probability. So, this is not considered as the best model in predicting term deposit subscription. Its accuracy is `r acc_lssvm`%. The F1 score is greatly decreased to `r f1_lssvm`%. F1 score near 60% is the average model. Therefore this model doesnot predict term deposit correctly. LSSVM with classes does not examine Overall area under the curve of ROC. 
+
+### 7.1 Random Forest
+Random forest otherwise known as Random Decision forests, is an ensemble of many decision trees mainly used for classification and regression tasks. It constructs multiple of decision trees at a training time. For classification tasks, the output of the random forest is the class selected by most trees. Random forests selects random subset of the features at each candidate split in the learning process. Typically, for a classification problem with p features, $\sqrt{p}$ (rounded down) features are used in each split.
+
+It uses bagging and feature randomness when building each individual tree whose prediction is more accurate than that of any individual tree. It randomize subsets of features and take average voting to make predictions. It merges multiple decision trees to get more accurate and stable prediction. It adds additional randomness to the model, while growing the trees.  So in random forest, output trees are not only trained on different sets of data but also use different features to make decisions.
+
+Random forest in the rminer package uses randomForest from randomForest package. The fit and predict function trains and test the model performance. Random Forest model is implemented as:
+```{r random,echo=FALSE}
+M8=fit(y~. -duration,bank_train_data,model="randomForest")
+P8=predict(M8,bank_validation_data)
+print(mmetric(bank_validation_data$y,P8,"CONF"))
+print("Overall area under the curve of ROC:")
+auc_ran <- print(mmetric(bank_validation_data$y,P8,"AUC")) 
+print("F1 score: ")
+f1_ran <- print(mmetric(bank_validation_data$y,P8,"macroF1"))
+acc_ran <- round(mmetric(bank_validation_data$y,P8,metric="ACC"),2) 
+# Lets tabulate the results
+Accuracy_results <- bind_rows(Accuracy_results,
+                              tibble(Model = "Random Forest",
+                                     Accuracy = acc_ran,
+                                     AUC = auc_ran,
+                                     F1_score = f1_ran))
+Accuracy_results %>% knitr::kable()
+```
+The accuracy of the random forest model in predicting term deposit subscription is lower than ctree model. Yet, it is a good model and faster model to implement. The model produces accuracy of about `r acc_ran`%. This model is a better model with improved accuracy, overall area under the curve(`r auc_ran`) and F1 score(`r f1_ran`%) compared to SVM and LSSVM.
+
+### 7.2 Tuning Random Forest
+The hyper-parameters of the Random forest algorithm can be tuned by setting up the number of samples for tree building at each replacement. This can reduce overfitting and overtraining of the model with improved accuracy. In random forest model, pre-understanding the result can't be done because models are randomly processing. Tuning the algorithm will helps to control the training process and gain better result. There are many parameters to tune, but to have the biggest affect in model accuracy, two parameters mtry and ntree is used. 
+
+The parameter mtry denotes number of variables randomly collected to be sampled at each split time and ntree denotes number of branches that will grow after each time split. I used grid search() function to divide the dataset into 3 folds cross validation using AUC of ROC curve as an evaluation metric at each split. It is implemented as:
+```{r random-tune, echo=FALSE}
+### randomForest
+# search for mtry and ntree
+s=list(smethod="grid",search=list(mtry=c(1,2,3),ntree=c(100,200,500)),
+       convex=0,metric="AUC",method=c("kfold",3,12345))
+M10 = fit(y~. -duration,bank_train_data,model="randomForest",search=s,fdebug=TRUE)
+print(M10@mpar)
+P10=predict(M10,bank_validation_data)
+print("AUC: ")
+auc_ran_tune <- print(mmetric(bank_validation_data$y,P10,"AUC"))
+print(mmetric(bank_validation_data$y,P10,"CONF"))
+print("F1 score: ")
+f1_ran_tune <- print(mmetric(bank_validation_data$y,P10,"macroF1"))
+acc_ran_tune <- round(mmetric(bank_validation_data$y,P10,metric="ACC"),2) 
+# Lets tabulate the results
+Accuracy_results <- bind_rows(Accuracy_results,
+                              tibble(Model = "Random Forest Tuning",
+                                     Accuracy = acc_ran_tune,
+                                     AUC = auc_ran_tune,
+                                     F1_score = f1_ran_tune))
+Accuracy_results %>% knitr::kable()
+```
+The accuracy of the model has been slightly improved to `r acc_ran_tune`%. The main objective of this tuning is to control the training of the model and to improve the accuracy without overfitting and overtraining of the model. The overall curve of the ROC is `r auc_ran_tune` and F1 score is `r f1_ran_tune`%. F1 scores and AUC is slightly improved compared to standard random forest. 
+
+### 8. LDA model
+LDA stands for Linear Discriminant Analysis. It is a classifier with a linear decision boundary, generated by fitting class conditional densities to the data and using Bayes rule. The model fits a Gaussian density to each class, assuming that all classes share the same covariance matrix. The fitted model can also be used to reduce the dimensionality of the input by projecting it to the most discriminative directions. It is a dimensionality reduction technique. As the name implies dimensionality reduction techniques reduce the number of dimensions (i.e, variables) in a dataset while retaining as much information as possible. It is a two-class technique.
+
+It is constructed as: 1) Calculating the distance between the mean of different classes(between-class variance). 2) Calculating distance between the mean and the sample of every class(within-class variance). 3) Constructing lower-dimensional space that maximizes between-class variance and minimizes within-class variance. 
+
+In rminer package, LDA model uses lda from MASS package. The fit and predict function trains and test the model performance. LDA model is implemented as:
+```{r lda,echo=FALSE,warning=FALSE}
+H=holdout(bank_data$y,ratio=2/3)
+M11 = fit(y ~. -duration,bank_data[H$tr,], model = "lda")
+P11 = predict(M11,bank_data[H$ts,])
+print("AUC: ")
+auc_lda <- print(mmetric(bank_data$y[H$ts],P11,"AUC")[[1]]) 
+print(mmetric(bank_data$y[H$ts],P11,"CONF"))
+print("F1 score: ")
+f1_lda <- print(mmetric(bank_data$y[H$ts],P11,"macroF1"))
+acc_lda <- round(mmetric(bank_data$y[H$ts],P11,metric="ACC"),2) #88.59
+# Lets tabulate the results
+Accuracy_results <- bind_rows(Accuracy_results,
+                              tibble(Model = "LDA model",
+                                     Accuracy = acc_lda,
+                                     AUC = auc_lda,
+                                     F1_score = f1_lda))
+Accuracy_results %>% knitr::kable()
+```
+The LDA model prunes the attributes thereby selecting appropriate attributes that is important in predicting term deposit subscription. The accuracy of the model is `r acc_lda`% which is lower compared to random forest and svm model. It is a dimensionality reduction model. Therefore,we can't expect to improve the model quite high. Though accuracy is smaller, F1 scores are higher for LDA model compared to svm and lssvm model. F1 score is `r f1_lda`% and AUC of ROC is `r auc_lda`.Therefore, it is a average model in predicting term deposit subscription.
+
+### 9. Generalized Linear model(GLM)
+GLM model is an extension of linear regression model but with flexibility. It  allows response variable y to have an error distribution other than a normal distribution. The General Linear Model (GLM) is a useful framework for comparing how several variables affect different continuous variables. It consists of three components: random component, systematic component, and a link function. The model should assume that Y is normally distributed, errors are normally distributed and independent, and X is fixed and constant variance. The GLM generalizes linear regression by allowing the linear model to be related to the response variable via a link function and by allowing the magnitude of the variance of each measurement to be a function of its predicted value.
+
+In rminer package, GLM model uses  cv.glmnet from glmnet package. Here, Generalized Linear Model (GLM) uses lasso or elasticnet regularization. Also,  cross-validation is used automatically to set the lambda parameter that is needed to compute the predictions.GLM model is implemented as:
+```{r glm,echo=FALSE}
+H=holdout(bank_data$y,ratio=2/3)
+M12 =fit(y~. -duration,bank_data[H$tr,],model="cv.glmnet") #probabilities
+P12 = predict(M12,bank_data[H$ts,])
+print("AUC: ")
+auc_glm <- print(mmetric(bank_data$y[H$ts],P12,"AUC")[[1]]) #0.933
+print(mmetric(bank_data$y[H$ts],P12,"CONF"))
+print("F1 score: ")
+f1_glm <- print(mmetric(bank_data$y[H$ts],P12,"macroF1"))
+acc_glm <- round(mmetric(bank_data$y[H$ts],P12,metric="ACC"),2) #89.90
+# Lets tabulate the results
+Accuracy_results <- bind_rows(Accuracy_results,
+                              tibble(Model = "GLM model",
+                                     Accuracy = acc_glm,
+                                     AUC = auc_glm,
+                                     F1_score = f1_glm))
+Accuracy_results %>% knitr::kable()
+```
+The accuracy of the model in predicting term deposit subscription is `r acc_glm`%. It is slightly better than LDA model. F1 score is low (i.e, `r f1_glm`%) and AUC of ROC is higher than random forest and lda models.AUC is `r auc_glm`.
+
+To check if GLM model's accuracy increases by k-fold validation method, lets implement that below:
+```{r glm-fold,echo=FALSE}
+M14=fit(y~. -duration,bank_data[H$tr,],model="cv.glmnet",nfolds=3) 
+plot(M14@object) # show cv.glmnet object
+P14=predict(M14,bank_data[H$ts,])
+print("AUC: ")
+auc_glm_fold <- print(mmetric(bank_data$y[H$ts],P14,"AUC")[[1]])
+print(mmetric(bank_data$y[H$ts],P14,"CONF"))
+print("F1 score: ")
+f1_glm_fold <- print(mmetric(bank_data$y[H$ts],P14,"macroF1"))
+acc_glm_fold <- round(mmetric(bank_data$y[H$ts],P14,metric="ACC"),2) #90.88
+# Lets tabulate the results
+Accuracy_results <- bind_rows(Accuracy_results,
+                              tibble(Model = "GLM model tuning",
+                                     Accuracy = acc_glm_fold,
+                                     AUC = auc_glm_fold,
+                                     F1_score = f1_glm_fold))
+Accuracy_results %>% knitr::kable()
+```
+The accuracy of the model in predicting term deposit subscription is `r acc_glm_fold`%. It does not quite improve the model compared to normal GLM model. There is no big difference between AUCs(`r auc_glm_fold`). Very slight improvement in F1 scores(`r f1_glm_fold`).
+
+### 10. Multilayer Perceptron model
+Multi-layer Perceptron (MLP) is a supervised machine learning algorithm that learns a function $f(.) : R_m -> R_n$ by training on a dataset, where m is the number of dimensions for input and n is the number of dimensions for output. Given a set of features X = x1,x2,..,xm and a target y, it can learn a non-linear function for either classification or regression. The standard multilayer perceptron (MLP) is a cascade of single-layer perceptrons. There is a layer of input nodes, a layer of output nodes, and one or more intermediate layers. The interior layers are sometimes called “hidden layers” because they are not directly observable from the systems inputs and outputs. 
+
+ Since MLPs are fully connected, each node in one layer connects with a certain weight $w_{ij}$ to every node in the following layer. Learning occurs in the perceptron by changing connection weights after each piece of data is processed, based on the amount of error in the output compared to the expected result.
+
+Here, in rminer package, Multilayer perceptron has single hidden layer. It uses nnet from nnet package. In default,  the maximum number of weights was increased and fixed to MaxNWts=10000). The fit and predict function trains and test the model performance. MLP model is implemented as:
+```{r mlp,echo=FALSE}
+H=holdout(bank_data$y,ratio=2/3)
+M15 =fit(y~. -duration,bank_data[H$tr,],model="mlp")
+P15=predict(M15,bank_data[H$ts,])
+print("AUC: ")
+auc_mlp <- print(mmetric(bank_data$y[H$ts],P15,"AUC")[[1]])
+print(mmetric(bank_data$y[H$ts],P15,"CONF"))
+print("F1 score: ")
+f1_mlp <- print(mmetric(bank_data$y[H$ts],P15,"macroF1"))
+acc_mlp <- round(mmetric(bank_data$y[H$ts],P15,metric="ACC"),2) #90.52
+# Lets tabulate the results
+Accuracy_results <- bind_rows(Accuracy_results,
+                              tibble(Model = "MLP model",
+                                     Accuracy = acc_mlp,
+                                     AUC = auc_mlp,
+                                     F1_score = f1_mlp))
+Accuracy_results %>% knitr::kable()
+```
+The accuracy of the MLP model is `r acc_mlp`%. MLP model does not improve the model performance compared to GLM model. Hence, it is not the best model in predicting term deposit subscription. There is no improvement in accuracy compared to GLM and KNN models.  F1 scores(`r f1_mlp`%) are higher than GLM models. AUC of ROC is lower(`r auc_mlp`) compared to GLM models
+
+### 11. Mutinom(Logistic Regression) model
+Multinomial logistic regression is used to model nominal outcome variables, in which the log odds of the outcomes are modeled as a linear combination of the predictor variables. It Fits multinomial log-linear models via neural networks. It is a classification method that generalizes logistic regression to multi-class problems, i.e. with more than two possible discrete outcomes. It is used to predict the probabilities of the different possible outcomes of a categorically distributed dependent variable, given a set of independent variables. Multinomial logistic regression is used when the dependent variable in question is categorical. 
+
+The goal is to construct a linear predictor function that constructs a score from a set of weights that are linearly combined with the explanatory variables (features) of a given observation using a dot product:
+$$ score(X_i,k) = \beta_k . X_i$$
+where $X_i$ is the vector of explanatory variables describing observation *i*, $\beta_k$ is a vector of weights (or regression coefficients) corresponding to outcome *k*, and $score(X_i, k)$ is the score associated with assigning observation *i* to category *k*.
+
+In rminer package, Multinomial Logistic Regression model uses multinom from nnet package. The fit and predict function trains and test the model performance. The model is implemented as: 
+```{r multinom,echo=FALSE}
+H=holdout(bank_data$y,ratio=2/3)
+M16 = fit(y ~. -duration,bank_data[H$tr,], model = "multinom")
+P16=predict(M16,bank_data[H$ts,])
+print("AUC: ")
+auc_multi <- print(mmetric(bank_data$y[H$ts],P16,"AUC")[[1]])
+print(mmetric(bank_data$y[H$ts],P16,"CONF"))
+print("F1 score: ")
+f1_multi <- print(mmetric(bank_data$y[H$ts],P16,"macroF1"))
+acc_multi<- round(mmetric(bank_data$y[H$ts],P16,metric="ACC"),2) 
+# Lets tabulate the results
+Accuracy_results <- bind_rows(Accuracy_results,
+                              tibble(Model = "Multinomial Logistic Regression model",
+                                     Accuracy = acc_multi,
+                                     AUC = auc_multi,
+                                     F1_score = f1_multi))
+Accuracy_results %>% knitr::kable()
+
+```
+The accuracy of the model in predicting term deposit subscription is `r acc_multi`%. Multinomial Logistic Regression model improved the accuracy quite high compared to GLM and SVM models. The overall area under the curve of ROC is higher(`r auc_multi`) than mlp and random forest models. F1_score(`r f1_multi`%) is lower than mlp models.
+
+### 12. Bagging model
+Bagging, also known as bootstrap aggregation, is the ensemble learning method that is commonly used to reduce variance within a noisy dataset. Each base classifier is trained in parallel with a random sample of data selected with replacement. i.e, the individual data points can be chosen more than once, N data from the original training dataset , where N is the size of the original training set. Training set for each of the base classifiers is independent of each other. Bagging helps to avoid overfitting. Each sample of data is used to train their decision trees. As a result, an ensemble of different models is achieved. Average of all the predictions from different trees are used which is more robust than a single decision tree classifier.
+
+Suppose there are N observations and M features in training data set, a sample is taken randomly with replacement. Then, subset of M features are selected randomly and the feature which gives the best split is used to split the node iteratively till the tree is grown to the largest. Above steps are repeated n times and prediction is given based on the aggregation of predictions from n number of trees.
+
+In rminer package, Bagging model uses bagging from adabag package. The fit and predict function in rminer trains and test the model performance. Bagging model is implemented as:
+```{r bagging,echo=FALSE}
+H=holdout(bank_data$y,ratio=2/3)
+M17 = fit(y ~. -duration,bank_data[H$tr,], model = "bagging")
+P17=predict(M17,bank_data[H$ts,])
+print("AUC: ")
+auc_bag <- print(mmetric(bank_data$y[H$ts],P17,"AUC")[[1]])
+print(mmetric(bank_data$y[H$ts],P17,"CONF"))
+print("F1 score: ")
+f1_bag <- print(mmetric(bank_data$y[H$ts],P17,"macroF1"))
+acc_bag <- round(mmetric(bank_data$y[H$ts],P17,metric="ACC"),2) 
+# Lets tabulate the results
+Accuracy_results <- bind_rows(Accuracy_results,
+                              tibble(Model = "Bagging model",
+                                     Accuracy = acc_bag,
+                                     AUC = auc_bag,
+                                     F1_score = f1_bag))
+Accuracy_results %>% knitr::kable()
+```
+The accuracy of the bagging model is `r acc_bag`%. The overall area under the curve is `r auc_bag`. Bagging model's AUC of ROC is the least value in this project. F1-score(`r f1_bag` %) is also lower compared to mlp and multinom model. There is no significant difference in accuracy compared to previous models.
+
+### 13. Boosting model
+Boosting is the ensemble machine learning model which reduces variance similar to Bagging model. Instead of random replacement like bagging, boosting model create collection of predictors. The goal is to build a strong classifier from the number of weak classifiers. A weak classifier is one which is slightly correlated with the true classification whereas strong classifier is arbitrarily well-correlated with the true classification.
+
+At first, the model is built from the training data. The second model is built by analysing the first model for errors and trying to correct it. Consecutive trees (random sample) are fit at every step and the goal is to improve the accuracy from the prior tree. This method is continued and models are added until complete dataset is predicted or maximum number of models are added. When an input is misclassified by a hypothesis, its weight is increased so that next hypothesis is more likely to classify it correctly. 
+
+In rminer package, Boosting model uses boosting from adabag package. AdaBoost was the first really successful boosting algorithm developed for the purpose of binary classification which combines multiple “weak classifiers” into a single “strong classifier”. The fit and predict function in rminer trains and test the model performance. Boosting model is implemented as:
+```{r boost,echo=FALSE}
+H=holdout(bank_data$y,ratio=2/3)
+M18 = fit(y ~. -duration,bank_data[H$tr,], model = "boosting")
+P18=predict(M18,bank_data[H$ts,])
+print("AUC: ")
+auc_boost <- print(mmetric(bank_data$y[H$ts],P18,"AUC")[[1]])
+print(mmetric(bank_data$y[H$ts],P18,"CONF"))
+print("F1 score: ")
+f1_boost <- print(mmetric(bank_data$y[H$ts],P18,"macroF1"))
+acc_boost <- round(mmetric(bank_data$y[H$ts],P18,metric="ACC"),2) # 90.94
+# Lets tabulate the results
+Accuracy_results <- bind_rows(Accuracy_results,
+                              tibble(Model = "Boosting model",
+                                     Accuracy = acc_boost,
+                                     AUC = auc_boost,
+                                     F1_score = f1_boost))
+Accuracy_results %>% knitr::kable()
+```
+One can see boosting model is not better than bagging model although every step of boosting tries to improve the accuracy by identifying the errors. Thus, the accuracy of the model is `r acc_boost`%. Both AUC of ROC(`r auc_boost`) and F1_scores (`r f1_boost`) are lower than multinom and mlp models.
+
+### 14. Decision tree model
+Decision tress are represented in tree like structure where each internal node represents feature and leaf node represents class label of the model. It is a Supervised Machine Learning algorithm that helps us to determine a course of action or a statistical probability outcome. The paths from root to leaf represent classification rules. It identifies ways to split a data set based on different conditions or rules. Tree models where the target variable can take a discrete set of values are called classification trees.
+
+To make a decision tree, start with a decision that needs to be made. Then, draw lines outward from the decision; each line moves from left to right, representing a potential option. At the end of each option, analyze the results. If the result of an option is a new decision, draw new lines out of that decision, representing the new options, and labeling them accordingly. If the result of an option is unclear, it denotes potential risk. Continue to expand until every line reaches an endpoint stating every choice or outcome is covered. 
+
+In rminer package, Decision tree uses rpart from rpart package. It is easy to read and interpret without requiring statistical knowledge. The fit and predict function in rminer trains and test the model performance. Bagging model is implemented as:
+```{r deci,echo=FALSE}
+M19 = fit(y ~. -duration,bank_train_data, model="rpart")
+plot(M19@object,uniform=TRUE,branch=0,compress=TRUE) 
+text(M19@object,xpd=TRUE,fancy=TRUE,fwidth=0.2,fheight=0.2)
+P19=predict(M19,bank_validation_data)
+print("AUC: ")
+auc_dec <- print(mmetric(bank_validation_data$y,P19,"AUC"))
+print(mmetric(bank_validation_data$y,P19,"CONF"))
+print("F1 score: ")
+f1_dec <- print(mmetric(bank_validation_data$y,P19,"macroF1"))
+acc_dec <- round(mmetric(bank_validation_data$y,P19,metric="ACC"),2) 
+# Lets tabulate the results
+Accuracy_results <- bind_rows(Accuracy_results,
+                              tibble(Model = "Decision Tree",
+                                     Accuracy = acc_dec,
+                                     AUC = auc_dec,
+                                     F1_score = f1_dec))
+Accuracy_results %>% knitr::kable()
+```
+The accuracy of the decision tree model is `r acc_dec`%. Decision tree model is slightly better than Boosting and GLM model. But its AUC of ROC(`r auc_dec`) and F1 scores(`r f1_dec`%) are lower compared to boosting model.
+
+### Final model against validation set by ctree model(Internal validation)
+By summing up the prediction of term deposit subscription by different models, it is concluded that cTree model by internal validation gives best accuracy, F1 score and AUC of the ROC. Hence, ctree model is used as a final model against validation set to predict term deposit subscription for clients. Here, we use the entire *bank_data* dataset for training against *validation*(testing) set.
+
+This model is chosen because it has the highest accuracy along with large overall area under the curve of ROC and highest F1 score. Accuracy alone is not considered for choosing this model. Along with it F1 scores and AUC is also examined. It is said that higher the AUC, better the performance of the model at distinguishing between positive and negative classes. Here, AUC is above 0.9(around 0.94) and F1 score is around 78% which is the highest score in this project model.Hence, cTree  by internal validation is considered as the best model. 
+
+```{r final-transform}
+validation <- validation %>% mutate(euribor3m = as.numeric(as.character(euribor3m)))
+str(validation$euribor3m)
+```
+Here, euribor of validation is convereted into numeric same as bank_data set.
+
+cTree by internal validation uses mparheuristic function in rminer package that returns a list of searching (hyper)parameters for a particular model or for a multiple list of models. The result is to be put in a search argument, used by fit or mining functions. The n arguement in mparheuristic() is number of searches or heuristic for the model. The lower and upper argument is a sequence of window(values) for k-value to be chosen. 
+
+Here, Internal validation uses 10-fold validation for better accuracy and to avoid overtraining and overfitting of the model. Internal validation trains the model with the evaluation of AUC(overall area under the curve) of ROC at every search.
+```{r ctree-val-final,echo=FALSE}
+mint_final=c("kfold",10,123) # internal validation method
+s1=list(search=mparheuristic("ctree",n=8,lower=0.1,upper=0.99),method=mint_final,metric = "AUC")
+M_heu_final=fit(y~. -duration,bank_data,model="ctree",search=s1,fdebug=TRUE)
+print("Heurestic parameter object:")
+print(M_heu_final@mpar)
+P_heu_final=predict(M_heu_final,validation)
+print(mmetric(validation$y,P_heu_final,"CONF"))
+print("AUC of ROC:")
+final_auc_ctreeval <- print(mmetric(validation$y,P_heu_final,"AUC")[[1]]) 
+print("All metrics:")
+print(mmetric(validation$y,P_heu_final,"ALL"))
+print("F1 score: ")
+final_f1_ctreeval <- print(mmetric(validation$y,P_heu_final,"macroF1"))
+final_accuracy <- round(mmetric(validation$y,P_heu_final,metric="ACC"),2) 
+# Lets tabulate the results
+Accuracy_results <- bind_rows(Accuracy_results,
+                              tibble(Model = "Final model by cTree(internal validation)",
+                                     Accuracy = final_accuracy,
+                                     AUC = final_auc_ctreeval,
+                                     F1_score = final_f1_ctreeval))
+Accuracy_results %>% knitr::kable()
+```
+The accuracy of the final model is 91.38 by 10-fold internal validation of the conditional inference tree. Here, at each fold, it picks observations at random with replacement (which means the same observation can appear twice). F1 score(`r final_f1_ctreeval`) and AUC(`r final_auc_ctreeval`) are higher for this model.
+
+# Visualisation of final model
+The final model's prediction for term deposit subscription of clients is visualised through ROC curve.
+```{r final-visualize, echo=FALSE}
+mgraph(validation$y,P_heu_final,graph="ROC",TC=2,main = "Yes ROC",
+       baseline=TRUE,Grid=10, leg = "Yes")
+mgraph(validation$y,P_heu_final,graph="ROC",TC=1, main = "No ROC",
+       baseline=TRUE,Grid=10,leg = "No")
+```
+It is said that good ROC curve will bow up to the top left of the plot. Here, in both ROC plots for two classes yes and no, ROC curve bent near the top left corner compared to any other models. Hence this model is the best model in predicting term deposit subscription. It also predicts term deposit subscription accurate than any model.
+
+
+# Conclusion
+Bank marketing campaign dataset has 20 descriptive and 1 target feature. All attributes are considered in the model except duration which is not known before a call is performed. In data exploration, chi-square test determines personal and housing loan attributes does not play an important role in predicting term deposit subscription by p-value. So, duration, personal and housing loan features are removed. Later, in base Logistic regression model, all other features are explored individually and found nr.employed, consumer price and confidence indexes, age, job, marital and education have no significant feature in the prediction of deposit subscription. So, they are omitted and accuracy of the model for prediction is estimated for the model. In second phase of the project, classification models are explored using rminer package. 14 classification models are executed one by one and their accuracy are compared with each other to choose the best model with highest accuracy. The highest accuracy produced by the model is Ctree(about 91%) in predicting term deposit subscription. 
+
+Hence, ctree by internal validation model is chosen as the best and final model because of its increased accuracy, overall area under the curve and F1 scores compared to other models. Thus, final model uses entire bank_data set against validation set(final holdout test). The accuracy produced by the final ctree  model is `r final_accuracy`%. Hence, it is proven that this model predicts term deposit subscription of clients better than any other models.
+
+This project can be extended in future by handling outliers which may be part of the dataset and not just random figures. Removing them can modify the dataaset, so domain knowledge of that area is required to handle those outliers. They may have an effect in predicting term deposit subscription. And powerful neural networks can also be used for making good prediction of deposit subscription in the near future. 
+
+# References
+
+[1]. [Moro et al., 2014] S. Moro, P. Cortez and P. Rita. A Data-Driven Approach to Predict the Success of Bank Telemarketing. Decision Support Systems, Elsevier, 62:22-31, June 2014
+
+[2]. Haifeng Wang and Dejin Hu, "Comparison of SVM and LS-SVM for Regression," 2005 International Conference on Neural Networks and Brain, 2005, pp. 279-283, doi: 10.1109/ICNNB.2005.1614615.
